@@ -1,0 +1,876 @@
+/* Google Fonts (Quicksand) artik header.php icindeki <link> ile yukleniyor (render-blocking @import kaldirildi) */
+
+/* Marka paleti - slider ve logonun renkleri tek yerden yonetilsin */
+:root {
+ --sc-yesil:#198754;
+ --sc-yesil-koyu:#0f5132;
+ --sc-lacivert:#0d3b66;
+ --sc-amber:#b45309;
+ --sc-amber-acik:#fbbf24;
+ --sc-beyaz-yari:rgba(255,255,255,.16);
+ --sc-yesil-acyk:#d1e7dd;
+ --sc-yesil-kenar:#a3cfbb;
+ --sc-yesil-metin:#0a3622;
+ --sc-yesil-orta:#157347;
+ --sc-navy-acyk:#e7eff7;
+ --sc-navy-kenar:#c0d5ea;
+ --sc-navy-metin:#0a2540;
+ --sc-focus:rgba(25,135,84,.25);
+ /* Etiket renkleri: BS utility siniflarinin (text-success, btn-outline-*) metin
+   rengi. Acik degerler Bootstrap 5.3.2'nin sabitleri ile aynidir; koyu temada
+   BS'nin text-emphasis tonlarina cikar (aksi halde #198754 koyu zeminde 3.4:1
+   kalip WCAG 4.5 esiginin altina duser). */
+ --sc-etiket-yesil:#198754;
+ --sc-etiket-info:#0d3b66;
+ --sc-etiket-danger:#dc3545;
+ --sc-etiket-warn:#ffc107;
+ --sc-etiket-gri:#6c757d;
+}
+
+/* Koyu tema - marka renkleri (yesil/lacivert/amber) KORUNUR; yalnizca yumusak
+   zemin, kenar ve metin tonlari koyulastirilir. Bootstrap 5.3'un yerli
+   data-bs-theme mekanizmasi body-site koprularini da otomatik besler. */
+html[data-bs-theme="dark"] {
+ --sc-yesil-acyk:#0f2f22;
+ --sc-yesil-kenar:#1f5c41;
+ --sc-yesil-metin:#9fd8ba;
+ --sc-navy-acyk:#0f2237;
+ --sc-navy-kenar:#25415e;
+ --sc-navy-metin:#a8caf0;
+ --sc-focus:rgba(60,167,110,.30);
+ --sc-beyaz-yari:rgba(255,255,255,.10);
+ /* Bootstrap 5.3.2 [data-bs-theme=dark] text-emphasis degerleri */
+ --sc-etiket-yesil:#75b798;
+ --sc-etiket-info:#a8caf0;
+ --sc-etiket-danger:#ea868f;
+ --sc-etiket-warn:#ffda6a;
+ --sc-etiket-gri:#adb5bd;
+}
+
+/* Admin panelinin govde yerlesimi yalnizca content/css/admin-style.css'te
+   tanimlanir (body.admin); bu yuzden burada tekrarlanmaz. */
+
+.m-t-1em { margin-top:1em; }
+.m-r-1em { margin-right:1em; }
+.m-b-1em { margin-bottom:1em; }
+.m-l-1em { margin-left:1em; }
+.mt0 { margin-top:0; }
+
+select.no-arrow{
+ -moz-appearance: none;
+ -webkit-appearance: none;
+ appearance: none;
+}
+
+.vertical-center {
+ min-height: 100%;
+ min-height: 100vh;
+ display: flex;
+ align-items: center;
+}
+
+.link1{
+ text-decoration: none;
+ color: white;
+}
+.link1:hover{
+ text-decoration: none;
+ color: yellow;
+}
+p.firsat{
+ margin: 0;
+ padding: 0;
+}
+.baslik{
+ font-family: 'Quicksand', sans-serif;
+}
+.link2{
+ text-decoration: none;
+ color: black;
+}
+.link2:hover{
+ text-decoration: none;
+ color: grey;
+}
+.sepet-tablo > tbody > tr > td {
+ text-align: center;
+ vertical-align: middle;
+}
+.sepet-tablo > thead > tr > th {
+ text-align: center;
+ font-family: 'Quicksand', sans-serif;
+ /* table-light kalibi sabit acik renk verdi; semantik tertiary yuzey kullanilir */
+ background: var(--bs-tertiary-bg);
+ color: var(--bs-body-color);
+ border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Urun detay sayfasi - galeri stilleri (urun-detay.css'ten birlestirildi) */
+.ek-resim-thumbnail {
+ cursor: pointer;
+ transition: all 0.3s ease;
+ border: 2px solid transparent;
+}
+
+.ek-resim-thumbnail:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.ek-resim-thumbnail.active {
+ border-color: #28a745 !important;
+ box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+#anaResim {
+ transition: transform 0.3s ease;
+}
+
+#anaResim:hover {
+ transform: scale(1.01);
+}
+
+/* ---------------------------------------------------------------
+   Ikon bileseni - yerel Lucide sprite'i (includes/ikonlar.php) + <use>.
+   Geometri tek yerden gelir: stroke currentColor ile metnin rengini
+   devralir, boyut 1em oldugu icin font-size tasiyan kapsayicilara
+   (.ikon-kutu, .sepet-kutu, .btn) kendiligince uyar. Kapsayici on eki
+   yok, cunku admin paneli de bu dosyayi yukluyor (ayni bilesen, tek
+   tanim). Sprite'in kendisi govdede inline display:none ile gizlenir.
+   --------------------------------------------------------------- */
+.ik {
+ width: 1em;
+ height: 1em;
+ display: inline-block;
+ vertical-align: -.125em;
+ flex: 0 0 auto;
+ fill: none;
+ stroke: currentColor;
+ stroke-width: 2;
+ stroke-linecap: round;
+ stroke-linejoin: round;
+}
+
+/* Eski boyut siniflarinin (2x/3x/4x) karsiligi (em: bulundugu yaziyi izler) */
+.ik-2x { width: 2em; height: 2em; }
+.ik-3x { width: 3em; height: 3em; }
+.ik-4x { width: 4em; height: 4em; }
+
+/* Donen ikon: kaydet/guncelle butonlarinda bekleme isareti */
+@keyframes ik-spin { to { transform: rotate(360deg); } }
+
+.ik-spin {
+ animation: ik-spin 1s linear infinite;
+ transform-origin: center;
+}
+
+/* Hareket duyarliligi olan kullanicida sembol donmez, yazi zaten bilgiyi veriyor */
+@media (prefers-reduced-motion: reduce) {
+ .ik-spin { animation: none; }
+}
+
+/* ---------------------------------------------------------------
+   Site logosu - PNG dosyasi kullanilmiyor: Lucide ikon + tipografi
+   --------------------------------------------------------------- */
+.site-logo {
+ display: flex;
+ align-items: center;
+ gap: .6rem;
+ font-family: 'Quicksand', sans-serif;
+ text-decoration: none;
+}
+
+.logo-kutu {
+ width: 42px;
+ height: 42px;
+ border-radius: 12px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ background: linear-gradient(135deg, var(--sc-yesil), var(--sc-yesil-koyu));
+ color: #fff;
+ font-size: 1.15rem;
+ box-shadow: 0 2px 6px rgba(15, 81, 50, .3);
+ transition: transform .2s ease;
+}
+
+.site-logo:hover .logo-kutu {
+ transform: translateY(-1px);
+}
+
+.logo-yazi {
+ font-size: 1.35rem;
+ font-weight: 500;
+ letter-spacing: -.4px;
+ color: var(--bs-body-color);
+ white-space: nowrap;
+}
+
+.logo-yazi strong {
+ color: var(--sc-yesil);
+ font-weight: 700;
+}
+
+/* Koyu temada dar ekranda logo kucultulunce #198754 koyu zeminde 3.4:1'e
+   duser ve AA 4.5'i karsilamaz; acik yesil token'ina gecilir. Genis ekranda
+   yazi 21.6px/700 oldugu icin "buyuk metin" sayilir, 3:1 yeterlidir; bu
+   yuzden kural yalniz kirilma noktasinda (masaustu gorunum degismez). */
+@media (max-width: 575.98px) {
+ .logo-yazi { font-size: 1.1rem; }
+ .logo-kutu { width: 36px; height: 36px; font-size: 1rem; }
+ html[data-bs-theme="dark"] .logo-yazi strong { color: var(--sc-etiket-yesil); }
+}
+
+/* ---------------------------------------------------------------
+   Ikon kutusu - eskiden iki ikonun ust uste bindirilmesi (circle + stack)
+   yerine saf CSS rozet
+   --------------------------------------------------------------- */
+body.site .ikon-kutu {
+ width: 44px;
+ height: 44px;
+ border-radius: 50%;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ flex: 0 0 auto;
+ background: linear-gradient(135deg, var(--sc-yesil), var(--sc-yesil-koyu));
+ color: #fff;
+ font-size: 1.1rem;
+}
+
+body.site .ikon-kutu-lg {
+ width: 64px;
+ height: 64px;
+ font-size: 1.6rem;
+ box-shadow: 0 4px 12px rgba(15, 81, 50, .18);
+}
+
+/* ---------------------------------------------------------------
+   Ust bardaki sepet girisi - lacivert karo ikon + amber sayac
+   Marka renkleri koyu temada da korundugu icin degerler sabit birakilir;
+   yesil kampanya seridi uzerinde okunurluk iki temada da aynidir.
+   --------------------------------------------------------------- */
+body.site .sepet-dugme {
+ display: inline-flex;
+ align-items: center;
+ gap: .5rem;
+}
+
+body.site .sepet-kutu {
+ width: 34px;
+ height: 34px;
+ border-radius: 12px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ flex: 0 0 auto;
+ /* --sc-lacivert iki temada da ayni; koyu durak literal, cunku --sc-navy-metin
+    koyu temada acik maviye cikar ve beyaz ikon okunmaz olur. */
+ background: linear-gradient(135deg, var(--sc-lacivert), #062744);
+ color: #fff;
+ font-size: 1rem;
+ box-shadow: 0 2px 6px rgba(13, 59, 102, .35);
+ transition: transform .2s ease, box-shadow .2s ease;
+}
+
+body.site .sepet-dugme:hover .sepet-kutu {
+ transform: translateY(-1px);
+ box-shadow: 0 4px 10px rgba(13, 59, 102, .4);
+}
+
+body.site .sepet-dugme:focus-visible {
+ outline: none;
+}
+
+/* Klavye ile kullanimda odak halkasi gorunsun */
+body.site .sepet-dugme:focus-visible .sepet-kutu {
+ outline: 2px solid #fff;
+ outline-offset: 2px;
+}
+
+body.site .sepet-etiket {
+ white-space: nowrap;
+}
+
+body.site .sepet-sayac {
+ min-width: 22px;
+ height: 22px;
+ padding: 0 .3rem;
+ border-radius: 999px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ flex: 0 0 auto;
+ background: var(--sc-amber-acik);
+ color: var(--sc-lacivert);
+ font-weight: 700;
+ font-size: .78rem;
+ line-height: 1;
+}
+
+@media (max-width: 575.98px) {
+ body.site .ikon-kutu-lg { width: 52px; height: 52px; font-size: 1.3rem; }
+}
+
+/* ---------------------------------------------------------------
+   Tema toggle butonu - on yuz (admin karsiligi admin-style.css'te)
+   --------------------------------------------------------------- */
+body.site .tema-btn {
+ width: 38px;
+ height: 38px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ border: 1px solid var(--bs-border-color);
+ border-radius: 10px;
+ background: var(--bs-body-bg);
+ color: var(--bs-body-color);
+ font-size: 1rem;
+ cursor: pointer;
+ transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+body.site .tema-btn:hover {
+ border-color: var(--sc-yesil-kenar);
+ color: var(--sc-yesil);
+}
+
+body.site .tema-btn:focus-visible {
+ outline: none;
+ box-shadow: 0 0 0 .25rem var(--sc-focus);
+}
+
+/* ---------------------------------------------------------------
+   Anasayfa slideri - gorsel dosyasi yok, saf CSS zemin + desen
+   --------------------------------------------------------------- */
+.slide-alani .carousel-item {
+ min-height: clamp(220px, 30vw, 360px);
+ position: relative;
+ overflow: hidden;
+}
+
+/* Varyant bazli parlama/halka katmani */
+.slide-alani .carousel-item::before {
+ content: "";
+ position: absolute;
+ inset: 0;
+ pointer-events: none;
+}
+
+/* Ortak dokusal cizgiler (slider + banner ayni kurali paylasir) */
+.slide-alani .carousel-item::after,
+.banner-alani::after {
+ content: "";
+ position: absolute;
+ inset: 0;
+ background: repeating-linear-gradient(45deg, var(--sc-beyaz-yari) 0 2px, transparent 2px 26px);
+ opacity: .35;
+ pointer-events: none;
+}
+
+.slide-canta {
+ background: linear-gradient(135deg, var(--sc-yesil-koyu), var(--sc-yesil));
+}
+.slide-canta::before {
+ background: radial-gradient(circle at 82% 18%, rgba(255, 255, 255, .22), transparent 45%);
+}
+
+.slide-saat {
+ background: linear-gradient(135deg, #061a2b, var(--sc-lacivert));
+}
+.slide-saat::before {
+ background:
+  radial-gradient(circle at 78% 50%, transparent 0 68px, rgba(255, 193, 7, .55) 68px 72px, transparent 72px),
+  radial-gradient(circle at 78% 50%, transparent 0 108px, rgba(255, 255, 255, .18) 108px 111px, transparent 111px);
+}
+
+.slide-lamba {
+ background: linear-gradient(135deg, var(--sc-amber), var(--sc-amber-acik));
+}
+.slide-lamba::before {
+ background: radial-gradient(circle at 20% 28%, rgba(255, 255, 255, .55), transparent 42%);
+}
+
+.slide-alani .carousel-caption {
+ background: rgba(0, 0, 0, .28);
+ border-radius: .6rem;
+ padding: .75rem 1.1rem;
+ color: #fff;
+ text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+
+/* Koyu zeminde Bootstrap 5.3'in text-warning vurgusu (#997404) okunmuyor */
+.slide-saat .carousel-caption.text-warning {
+ color: #ffd75e !important;
+}
+
+/* Acik (amber) slaytta koyu metin + yari saydam beyaz plaka */
+.slide-lamba .carousel-caption {
+ background: rgba(255, 255, 255, .65);
+ color: #212529;
+ text-shadow: none;
+}
+.slide-lamba .carousel-item::after {
+ opacity: .2;
+}
+
+/* ---------------------------------------------------------------
+   Urunler sayfasi banneri - gorsel dosyasi yok, slider ile ayni dil
+   --------------------------------------------------------------- */
+.banner-alani {
+ position: relative;
+ overflow: hidden;
+ min-height: clamp(110px, 12vw, 160px);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ text-align: center;
+ padding: 1.25rem clamp(1rem, 4vw, 3rem);
+ background: linear-gradient(120deg, var(--sc-yesil-koyu), var(--sc-yesil) 60%, #157347);
+ color: #fff;
+}
+
+.banner-alani::before {
+ content: "";
+ position: absolute;
+ inset: 0;
+ background: radial-gradient(circle at 88% 20%, rgba(255, 255, 255, .20), transparent 45%);
+ pointer-events: none;
+}
+
+.banner-yazi {
+ font-family: 'Quicksand', sans-serif;
+ font-weight: 700;
+ font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+ margin: 0;
+ text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+
+.banner-alt-yazi {
+ margin: .25rem 0 0;
+ font-size: clamp(.85rem, 1.4vw, 1rem);
+ opacity: .92;
+}
+
+/* ---------------------------------------------------------------
+   Bootstrap tema ezmesi - YALNIZ on yuz (body.site)
+   Admin paneli style.css'i yukler ama govdesinde .admin vardir;
+   bu ezme yalniz on yuzu etkiler, admin kendi token'larini
+   (admin-style.css icindeki --ad-* degiskenleri) kullanir.
+   --------------------------------------------------------------- */
+body.site {
+ --bs-primary: var(--sc-yesil);
+ --bs-primary-rgb: 25, 135, 84;
+ --bs-primary-text-emphasis: var(--sc-yesil-koyu);
+ --bs-primary-bg-subtle: var(--sc-yesil-acyk);
+ --bs-primary-border-subtle: var(--sc-yesil-kenar);
+ --bs-info: var(--sc-lacivert);
+ --bs-info-rgb: 13, 59, 102;
+ --bs-info-text-emphasis: var(--sc-lacivert);
+ --bs-info-bg-subtle: var(--sc-navy-acyk);
+ --bs-info-border-subtle: var(--sc-navy-kenar);
+ --bs-link-color: var(--sc-yesil);
+ --bs-link-hover-color: var(--sc-yesil-koyu);
+ /* Bootstrap 5.3'un `a` kurali --bs-link-color-rgb okur; ezilmezse renksiz <a> mavi kalir */
+ --bs-link-color-rgb: 25, 135, 84;
+ --bs-link-hover-color-rgb: 15, 81, 50;
+}
+
+/* Koyu temada baglantilar ve vurgular da acik tonlara gecmeli; aksi halde
+   #198754 koyu govde zemini uzerinde 3.4:1 kalip WCAG 4.5 esiginin altina duser. */
+html[data-bs-theme="dark"] body.site {
+ --bs-link-color: var(--sc-etiket-yesil);
+ --bs-link-hover-color: var(--sc-yesil-metin);
+ --bs-link-color-rgb: 117, 183, 152;
+ --bs-link-hover-color-rgb: 159, 216, 186;
+ --bs-primary-text-emphasis: var(--sc-etiket-yesil);
+ --bs-info-text-emphasis: var(--sc-navy-metin);
+}
+
+/* Utility'ler Bootstrap'da !important oldugu icin burada da gerekiyor */
+body.site .text-primary {
+ color: var(--sc-etiket-yesil) !important;
+}
+
+/* BS 5.3.2 utility'leri sabit hex okur (--bs-success-rgb vb.); bunlar tek kaynaktan
+   (etiket token'lari) tema-duyarli hale getirilir. Acik degerler mevcut gorunumu
+   birebir korur. */
+body.site .text-success {
+ color: var(--sc-etiket-yesil) !important;
+}
+
+body.site .text-info {
+ color: var(--sc-etiket-info) !important;
+}
+
+body.site .text-danger {
+ color: var(--sc-etiket-danger) !important;
+}
+
+body.site .text-warning {
+ color: var(--sc-etiket-warn) !important;
+}
+
+body.site .bg-primary {
+ --bs-bg-opacity: 1;
+ background-color: var(--sc-yesil) !important;
+}
+
+/* Bilesenler: Bootstrap yerel degiskenleri hex olarak sabitledigi icin acikca yazilir */
+body.site .btn-primary {
+ --bs-btn-bg: var(--sc-yesil);
+ --bs-btn-border-color: var(--sc-yesil);
+ --bs-btn-hover-bg: var(--sc-yesil-orta);
+ --bs-btn-hover-border-color: var(--sc-yesil-orta);
+ --bs-btn-active-bg: var(--sc-yesil-koyu);
+ --bs-btn-active-border-color: var(--sc-yesil-koyu);
+ --bs-btn-focus-shadow-rgb: 25, 135, 84;
+}
+
+body.site .btn-outline-primary {
+ --bs-btn-color: var(--sc-etiket-yesil);
+ --bs-btn-border-color: var(--sc-yesil);
+ --bs-btn-hover-bg: var(--sc-yesil);
+ --bs-btn-hover-border-color: var(--sc-yesil);
+ --bs-btn-active-bg: var(--sc-yesil-koyu);
+ --bs-btn-active-border-color: var(--sc-yesil-koyu);
+ --bs-btn-focus-shadow-rgb: 25, 135, 84;
+}
+
+/* outline-* butonlarinin etiket/kenar rengi BS'de sabit hex; koyu temada
+   acik tona gecmezse 3.4:1'e duser. Hover/hover-disi marka yesili kalir. */
+body.site .btn-outline-success {
+ --bs-btn-color: var(--sc-etiket-yesil);
+ --bs-btn-border-color: var(--sc-etiket-yesil);
+}
+
+body.site .btn-outline-danger {
+ --bs-btn-color: var(--sc-etiket-danger);
+ --bs-btn-border-color: var(--sc-etiket-danger);
+}
+
+body.site .btn-outline-secondary {
+ --bs-btn-color: var(--sc-etiket-gri);
+ --bs-btn-border-color: var(--sc-etiket-gri);
+}
+
+body.site .pagination {
+ --bs-pagination-color: var(--sc-etiket-yesil);
+ --bs-pagination-hover-color: var(--bs-primary-text-emphasis);
+ --bs-pagination-focus-color: var(--bs-primary-text-emphasis);
+ --bs-pagination-focus-box-shadow: 0 0 0 .25rem var(--sc-focus);
+ --bs-pagination-active-bg: var(--sc-yesil);
+ --bs-pagination-active-border-color: var(--sc-yesil);
+}
+
+body.site .list-group-item {
+ --bs-list-group-active-bg: var(--sc-yesil);
+ --bs-list-group-active-border-color: var(--sc-yesil);
+ --bs-list-group-action-hover-bg: var(--sc-yesil-acyk);
+ --bs-list-group-action-active-bg: var(--sc-yesil-orta);
+}
+
+body.site .form-control:focus,
+body.site .form-select:focus {
+ border-color: var(--sc-yesil-kenar);
+ box-shadow: 0 0 0 .25rem var(--sc-focus);
+}
+
+body.site .form-check-input:checked {
+ background-color: var(--sc-yesil);
+ border-color: var(--sc-yesil);
+}
+
+body.site .form-check-input:focus {
+ border-color: var(--sc-yesil-kenar);
+ box-shadow: 0 0 0 .25rem var(--sc-focus);
+}
+
+body.site .dropdown-item:active {
+ background-color: var(--sc-yesil);
+ color: #fff;
+}
+
+body.site .btn-close:focus {
+ box-shadow: 0 0 0 .25rem var(--sc-focus);
+}
+
+/* Footer linklerine hover geri bildirimi (text-light !important tasidigi icin burada da gerekiyor) */
+body.site footer a.text-light:hover {
+ color: var(--sc-amber-acik) !important;
+ padding-left: 2px;
+ transition: padding-left .15s ease, color .15s ease;
+}
+
+/* ---------------------------------------------------------------
+   Koyu tema - ek uyarlamalar
+   --------------------------------------------------------------- */
+
+/* Tema gecisi kisa bir renk animasyonuyla olsun (hareket animasyonu eklenmez). */
+body.site {
+ transition: background-color .2s ease, color .2s ease;
+}
+
+/* SweetAlert2 kutusu <body> ucuna mount edilir; ne body.site ne body.admin
+   kapsamina girer. Admin paneli de style.css yukledigi icin tek kural iki
+   tarafa da yeter; bu nedenle bilincli olarak kapsamsizdir. */
+html[data-bs-theme="dark"] .swal2-popup {
+ background: #1c2229;
+ color: #e6eaf0;
+}
+
+html[data-bs-theme="dark"] .swal2-title,
+html[data-bs-theme="dark"] .swal2-html-container {
+ color: #e6eaf0;
+}
+
+/* ---------------------------------------------------------------
+   Kullanici kimlik sayfalar (giris / kayit / hesap / siparislerim)
+   Tamami body.site kapsamininda: admin paneli de bu dosyayi yukler.
+   Renkler sabit yazilmaz, tema degiskenlerinden alinir; boylece
+   acik/koyu modda ayrica bir kural gerekmez.
+   --------------------------------------------------------------- */
+
+/* Giris/kayit karti: dar bir sutunda ortalanir, butun genislige yayilmaz */
+body.site .auth-sayfa .auth-kart {
+ max-width: 480px;
+ margin-inline: auto;
+}
+
+/* Kart basligi: marka laciverti yuzey + ayirim cizgisi */
+body.site .auth-kart > .card-header {
+ background-color: var(--sc-navy-acyk);
+ border-bottom: 1px solid var(--sc-navy-kenar);
+}
+
+body.site .auth-baslik {
+ color: var(--sc-navy-metin);
+ font-size: 1.15rem;
+}
+
+/* Kart alti yardim metni (kayit/giris baglantilari ve not) */
+body.site .auth-alt-not {
+ font-size: .9rem;
+}
+
+/* Hesap menuyu ve "Giris Yap" linki: .nav-link flex yapilirsa simge ile yazi
+   ayni hizada bulusur. .ik kuralindaki vertical-align: -.125em yalnizca flex
+   disi baglamlarda (dropdown-item, buton ici vb.) devrede kalir; flex kutusunda
+   zaten gecersizdir, burada baseline ile ikinci bir guvenli konuma alinir. */
+body.site .navbar-nav .nav-link {
+ display: inline-flex;
+ align-items: center;
+}
+
+body.site .navbar-nav .nav-link .ik,
+body.site .hesap-ad {
+ vertical-align: baseline;
+}
+
+/* Uzun ad ve e-posta nav kutusunu tasmasin */
+body.site .hesap-ad {
+ display: inline-block;
+ max-width: 12ch;
+ /* Flex ogesi olarak daralabilsin: aksi halde uzun ad kutuyu tasirir */
+ min-width: 0;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+}
+
+body.site .hesap-menu .dropdown-header {
+ max-width: 240px;
+ font-size: .82rem;
+ font-weight: 400;
+}
+
+/* Siparislerim: kart basligi siparis durumuyla ayni yuzeyi paylasir */
+body.site .siparis-kart > .card-header {
+ background-color: var(--sc-navy-acyk);
+ border-bottom: 1px solid var(--sc-navy-kenar);
+}
+
+body.site .kalem-liste th,
+body.site .kalem-liste td {
+ font-size: .92rem;
+}
+
+/* ---------------------------------------------------------------
+   Mobil uyumluluk - Bootstrap ile ayni esikler (991.98 / 767.98 / 575.98)
+   Masaustu pikselleri korunsun diye kurallarin cogu media query icindedir.
+   Media disi kalanlar (kart gorseli, adet kutusu, slider altyazisi)
+   onceki inline stil / Bootstrap degerlerinin aynisini verir.
+   --------------------------------------------------------------- */
+
+/* Urun karti gorseli: eskiden inline stil olan 200px buraya tasinildi */
+.urun-kart-gorsel {
+ height: 200px;
+ object-fit: cover;
+}
+
+/* Anasayfa kartlari daha yuksekti (inline 250px) */
+.urun-kart-gorsel-lg {
+ height: 250px;
+}
+
+/* Sepetteki adet girisi: eskiden inline stil olan 130px */
+.adet-kutu {
+ width: 130px;
+}
+
+/* Slider altyazisi 576px altinda da gorunur (Bootstrap display:none verir);
+   body.site kapsaminin spesifiklik ustunlugu ezmesi icin yeterlidir. */
+body.site .slide-alani .carousel-caption {
+ display: block;
+}
+
+/* Mobil tarayici cubugu (dvh) ve notch (safe-area). 100dvh'yi desteklemeyen
+   tarayici ilk satirda kalir; .min-vh-100 !important oldugu icin burada da
+   !important gerekir. */
+body.site {
+ min-height: 100vh;
+ min-height: 100dvh !important;
+ padding-top: env(safe-area-inset-top);
+}
+
+@media (max-width: 991.98px) {
+ /* Hamburger menusu disindaki arama satiri: 44px dokunma hedefi */
+ body.site .header-ara-mobil .form-control,
+ body.site .header-ara-mobil .btn {
+  min-height: 44px;
+ }
+
+ body.site .tema-btn {
+  width: 44px;
+  height: 44px;
+ }
+
+ /* Filtre acma butonu da parmak icin yeterli yukukseligini alsin */
+ body.site .filtre-ac-btn {
+  min-height: 44px;
+ }
+
+ /* Giris/kayit formlari, hesap sayfasi ve siparis kartlari: dokunma hedefi */
+ body.site .auth-kart .form-control,
+ body.site .auth-kart .btn,
+ body.site .hesap-menu .btn,
+ body.site .siparis-kart .btn {
+  min-height: 44px;
+ }
+}
+
+@media (max-width: 767.98px) {
+ /* Urun karti: fiyat ve buton alt alta, butun genislikte.
+    urundetay'daki float'li kalip da (urun-kart-alt) bu kurala uyar. */
+ body.site .urun-kart-alt {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .35rem;
+ }
+
+ body.site .urun-kart-alt > .btn {
+  width: 100%;
+  min-height: 40px;
+  float: none !important;
+ }
+
+ body.site .urun-kart-alt > .badge {
+  align-self: flex-start;
+  float: none !important;
+ }
+
+ .urun-kart-gorsel {
+  height: 150px;
+ }
+
+ .urun-kart-gorsel-lg {
+  height: 180px;
+ }
+
+ /* Sepet tablosu: kaydirma sirasinda ilk sutun (urun gorseli) sabit kalir.
+    BS .table-hover hucreye !important ile renk verdigi icin burada de gerekir. */
+ body.site .sepet-tablo > thead > tr > th:first-child,
+ body.site .sepet-tablo > tbody > tr > td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--bs-body-bg) !important;
+ }
+
+ body.site .sepet-tablo > thead > tr > th:first-child {
+  background-color: var(--bs-tertiary-bg) !important;
+ }
+
+ body.site .sepet-tablo > tbody > tr:hover > td:first-child {
+  background-color: var(--bs-tertiary-bg) !important;
+ }
+
+ .adet-kutu {
+  width: 112px;
+ }
+
+ body.site .sepet-tablo .btn {
+  min-width: 44px;
+  min-height: 44px;
+ }
+
+ /* CKEditor ciktili aciklama: genis gorsel/tablo sayfayi uzetmesin */
+ body.site .urun-aciklama {
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+ }
+
+ body.site .urun-aciklama img,
+ body.site .urun-aciklama table {
+  max-width: 100%;
+ }
+}
+
+@media (max-width: 575.98px) {
+ /* Telefon: ust kampanya seridi ve slider altyazisi kuculur */
+ body.site .kampanya-metni {
+  font-size: .8rem;
+ }
+
+ body.site .kampanya-satiri {
+  padding-top: .3rem !important;
+  padding-bottom: .3rem !important;
+ }
+
+ body.site .slide-alani .carousel-caption {
+  font-size: .82rem;
+  padding: .5rem .75rem;
+  right: .5rem;
+  left: .5rem;
+  bottom: .75rem;
+ }
+
+ body.site .slide-alani .carousel-caption h3 {
+  font-size: 1rem;
+ }
+
+ body.site footer h4 {
+  font-size: 1.05rem;
+ }
+
+ /* Telefon: giris/kayit karti tam genislik alir, ic bosluk daralir */
+ body.site .auth-sayfa .auth-kart {
+  max-width: 100%;
+ }
+
+ body.site .auth-kart .card-body,
+ body.site .siparis-kart .card-body {
+  padding: 1rem;
+ }
+}
+
+@media (max-width: 359.98px) {
+ /* Cok dar telefonlarda (<=360px) urun izgarasi tek sutuna doner;
+    360px ve uzerinde iki sutun korunur. */
+ .urun-izgara > .col-6 {
+  flex: 0 0 100%;
+  max-width: 100%;
+ }
+}

@@ -1,0 +1,44 @@
+# EditorConfig: https://editorconfig.org
+# Duzenleyiciler arasi bosluk/satir sonu tutarliligi icin tek kaynak.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# PHP/HTML icice yuklu sablonlar 4 bosluk kullanir.
+[*.php]
+indent_style = space
+indent_size = 4
+
+[*.css]
+indent_style = space
+indent_size = 4
+
+# style.css LF kullanan tek dosyadir (admin-style.css ve JS CRLF'dir).
+# README'de bu ayrim not edilmistir; editor yanlislikla CRLF'e cevirmesin.
+[content/css/style.css]
+end_of_line = lf
+
+[*.js]
+indent_style = space
+indent_size = 4
+
+[*.sql]
+indent_style = space
+indent_size = 2
+
+[*.{yml,yaml,json}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.htaccess]
+indent_style = space
+indent_size = 4

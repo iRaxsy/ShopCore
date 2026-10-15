@@ -1,0 +1,40 @@
+# ============================================================
+# ShopCore .gitignore
+# ============================================================
+
+# Yerel yapilandirma: veritabani bilgisi ve ortam ayarlari depoya girmez.
+# Ornek dosya (yerel.orneke.php) takip edilir, gercek dosya edilmez.
+config/yerel.php
+
+# Yonetici tarafindan yuklenen urun gorselleri depoya alinmaz;
+# klasor yapisini korumak icin .htaccess ve sabit statikler istisna.
+content/images/*
+!content/images/.htaccess
+!content/images/default.png
+!content/images/logo.png
+
+# Uygulama calisma alani: onbellek ve gecici urunler.
+var/
+
+# Veritabani yedekleri / ciktilari (buyuk ve ortama ozel).
+sql/backup/
+
+# Composer bagimliliklari yalnizca depo kokunde; content/vendor/
+# (Bootstrap / SweetAlert2 / CKEditor 5 / Quicksand yazi tipleri) TAKIP EDILIR.
+/vendor/
+
+# Editr/IDE ve arac onbellekleri
+.idea/
+.vscode/
+*.bak
+*.tmp
+*.cache
+
+# Python tabarli analiz/arac kalintilari
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Isletim sistemi curufu
+Thumbs.db
+.DS_Store

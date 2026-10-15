@@ -1,0 +1,2385 @@
+/**
+ * Admin paneli stilleri - katmanli yapi.
+ *
+ * Katman 0 : token'lar (renk/golge/yari cap) - dosya kendi kendine yeter,
+ *            login.php yalnizca bu dosyayi yukler (style.css yuklenmez).
+ * Katman 1 : yerlesim (govde, ust bar, alt bar, sayfa basligi).
+ * Katman 2 : ortak bilesenler (kart, alert, buton, form, tablo, sayfalama...).
+ * Katman 3 : gercekten sayfaya ozel olan kurallar (.pg-* kapsayicisiyla).
+ *
+ * Sayfa acilis animasyonu (fadeIn / slideInDown) bilincli olarak YOK;
+ * hover'da yukselme/ziplama efektleri kaldirildi, gecisler renk/golge ile sinirli.
+ * class isimleri korunur (markup'i 14 admin dosyasinda degismez).
+ */
+
+/* ============================================================
+   KATMAN 0 - TOKEN'LAR (marka paleti: yesil + lacivert)
+   ============================================================ */
+:root {
+    --ad-yesil: #198754;
+    --ad-yesil-koyu: #0f5132;
+    --ad-yesil-orta: #157347;
+    --ad-yesil-acyk: #d1e7dd;
+    --ad-lacivert: #0d3b66;
+    --ad-lacivert-acyk: #e7eff7;
+    --ad-amber: #b45309;
+    --ad-metin: #1f2933;
+    --ad-metin-soluk: #6b7280;
+    --ad-kenar: #e5e9f0;
+    --ad-zemin: #f5f7fa;
+    --ad-beyaz: #ffffff;
+    --ad-danger: #dc3545;
+    --ad-danger-acyk: #f8d7da;
+    --ad-warn: #856404;
+    --ad-warn-acyk: #fff3cd;
+    /* Marka dolgunun uzerindeki etiket her temada beyaz kalmali; --ad-beyaz ise
+       yuzey rengidir ve koyu temada karartilir. Ayrilmazsa buton yazi/ikonlari
+       koyu temada siyaha doner. */
+    --ad-marka-metin: #ffffff;
+    --ad-beyaz-sabit: #ffffff;   /* her zaman koyu kalan topbar uzerindeki beyaz yuzey */
+    /* Metin olarak kullanan marka tonlari (dolgu degil) */
+    --ad-yesil-metin: #198754;
+    --ad-yesil-metin-koyu: #0f5132;
+    --ad-lacivert-metin: #0d3b66;
+    --ad-danger-metin: #dc3545;
+    --ad-danger-metin-koyu: #58151c;
+    /* Form ve tablo yuzeyleri */
+    --ad-input-kenar: #ced4da;
+    --ad-input-zemin: #f8fafc;
+    --ad-satir-hover: #f1f5f9;
+    --ad-radius: 12px;
+    --ad-radius-sm: 8px;
+    --ad-golge: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 12px rgba(16, 24, 40, .06);
+    --ad-golge-keskin: 0 2px 4px rgba(16, 24, 40, .08), 0 8px 20px rgba(16, 24, 40, .10);
+    --ad-focus: 0 0 0 3px rgba(25, 135, 84, .22);
+    --ad-gecis: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+/* Koyu tema - yalnizca yuzey/kenar/metin/golge tokenlari ezilir; marka renkleri
+   (--ad-yesil, --ad-yesil-koyu, --ad-yesil-orta, --ad-lacivert, --ad-amber,
+   --ad-danger, --ad-warn-acyk dolgulari) ve her iki temada koyu kalan ust bar
+   korunur. Bootstrap 5.3 yerli data-bs-theme mekanizmasini kullanir. */
+html[data-bs-theme="dark"] {
+    --ad-metin: #e6eaf0;
+    --ad-metin-soluk: #9aa5b1;
+    --ad-kenar: #2a313a;
+    --ad-zemin: #14181d;
+    --ad-beyaz: #1b2027;
+    --ad-yesil-acyk: #0f2f22;
+    --ad-lacivert-acyk: #0f2237;
+    --ad-danger-acyk: #3a1418;
+    --ad-warn-acyk: #3a2c07;
+    --ad-warn: #e0b341;
+    --ad-yesil-metin: #6ed0a0;
+    --ad-yesil-metin-koyu: #9fd8ba;
+    --ad-lacivert-metin: #9dc4ee;
+    --ad-danger-metin: #f0717c;
+    --ad-danger-metin-koyu: #f2b8c0;
+    --ad-input-kenar: #3a424d;
+    --ad-input-zemin: #232a33;
+    --ad-satir-hover: #232a33;
+    --ad-golge: 0 1px 2px rgba(0, 0, 0, .35), 0 4px 12px rgba(0, 0, 0, .32);
+    --ad-golge-keskin: 0 2px 4px rgba(0, 0, 0, .45), 0 8px 20px rgba(0, 0, 0, .42);
+    --ad-focus: 0 0 0 3px rgba(60, 167, 110, .28);
+}
+
+/* ============================================================
+   KATMAN 1 - YERLESIM
+   ============================================================ */
+body.admin {
+    background: var(--ad-zemin);
+    color: var(--ad-metin);
+    padding-top: calc(84px + env(safe-area-inset-top));   /* sabit ust bar yuku + notch */
+    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Mobil tarayici cubugu: 100dvh'yi desteklemeyen tarayici ustteki 100vh'de kalir */
+    min-height: 100dvh;
+    /* Tema gecisi kisa bir renk animasyonuyla olsun (hareket animasyonu yok). */
+    transition: background-color .2s ease, color .2s ease;
+}
+
+/* Her admin sayfasi kendi .container'ini acar; kalan yukseligi o doldurur
+   (footer her zaman alt kenarda kalir). */
+body.admin > .container {
+    flex: 1 0 auto;
+    padding-top: 8px;
+    padding-bottom: 32px;
+}
+
+/* --- Ust bar --- */
+.admin-topbar {
+    background: var(--ad-lacivert);
+    box-shadow: 0 1px 3px rgba(13, 59, 102, .25);
+    /* Notch/duzen cubugu: bar sabit konumda oldugu icin safe alan kadar asagi
+       basar; govde padding-top'i de ayni miktara buyutuldu (bkz. body.admin).
+       padding degil top kullanilir: .admin-topbar, Bootstrap'in .navbar
+       padding-top degerini (.5rem) ezmemeli (masaustu gorunum ayni kalsin). */
+    top: env(safe-area-inset-top);
+}
+
+.admin-topbar .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    color: var(--ad-marka-metin);
+    font-weight: 700;
+    letter-spacing: .2px;
+}
+
+.admin-topbar .brand-kutu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--ad-yesil), var(--ad-yesil-koyu));
+    color: var(--ad-marka-metin);
+    font-size: 1rem;
+}
+
+.admin-topbar .nav-link {
+    color: rgba(255, 255, 255, .82);
+    font-weight: 500;
+    padding: .45rem .9rem;
+    border-radius: var(--ad-radius-sm);
+    transition: var(--ad-gecis);
+}
+
+.admin-topbar .nav-link:hover,
+.admin-topbar .nav-link:focus {
+    color: var(--ad-marka-metin);
+    background: rgba(255, 255, 255, .10);
+}
+
+.admin-topbar .nav-link.active {
+    color: var(--ad-marka-metin);
+    background: rgba(255, 255, 255, .14);
+    box-shadow: inset 0 -2px 0 var(--ad-amber);
+}
+
+.admin-topbar .navbar-toggler {
+    border-color: rgba(255, 255, 255, .35);
+    color: var(--ad-marka-metin);
+}
+
+.admin-topbar .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.btn-topbar-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .45);
+    color: rgba(255, 255, 255, .9);
+    border-radius: var(--ad-radius-sm);
+    padding: .35rem .85rem;
+    font-size: .9rem;
+    transition: var(--ad-gecis);
+}
+
+.btn-topbar-outline:hover {
+    /* Ust bar her iki temada da lacivert kalir; buradaki beyaz plaka yuzey
+       rengiyle (--ad-beyaz, koyu temada karartilir) degismemelidir. */
+    background: var(--ad-beyaz-sabit);
+    border-color: var(--ad-beyaz-sabit);
+    color: var(--ad-lacivert);
+}
+
+/* --- Tema toggle butonu (ust bar ve giris sayfasi) --- */
+body.admin .tema-btn,
+body.login-page .tema-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+
+body.admin .tema-btn .ik,
+body.login-page .tema-btn .ik {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Giris sayfasi her iki temada da lacivert zemin kullanir; buton yari saydam
+   beyaz plakayla iki tonda da okunur. Kart ustunde bos bir satirda durur. */
+body.login-page .tema-ust {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: .75rem;
+}
+
+body.login-page .tema-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .10);
+    color: var(--ad-beyaz-sabit);
+    cursor: pointer;
+    transition: var(--ad-gecis);
+}
+
+body.login-page .tema-btn:hover {
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .45);
+}
+
+body.login-page .tema-btn:focus-visible {
+    outline: 2px solid var(--ad-yesil);
+    outline-offset: 2px;
+    background: rgba(255, 255, 255, .18);
+}
+
+/* --- Alt bar (artik static; icerigin ustunu kapatmaz) --- */
+.admin-footer {
+    background: var(--ad-beyaz);
+    border-top: 1px solid var(--ad-kenar);
+    color: var(--ad-metin-soluk);
+    font-size: .9rem;
+    padding: .85rem 0;
+    margin-top: auto;
+    flex: 0 0 auto;
+}
+
+/* --- Sayfa basligi --- */
+.page-header h1 {
+    color: var(--ad-lacivert-metin);
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ad-kenar);
+}
+
+.page-header h1:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 90px;
+    height: 2px;
+    background: linear-gradient(to right, var(--ad-yesil), var(--ad-lacivert));
+}
+
+/* ============================================================
+   KATMAN 2 - ORTAK BILESENLER
+   ============================================================ */
+
+/* --- Kartlar --- */
+.form-card,
+.upload-card,
+.image-gallery-card,
+.info-card,
+.detail-card,
+.form-container {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    margin-bottom: 24px;
+    overflow: hidden;
+    padding: 24px;
+}
+
+.form-header,
+.detail-header {
+    background: var(--ad-lacivert);
+    color: var(--ad-marka-metin);
+    padding: 18px 24px;
+    margin: -24px -24px 24px;
+    text-align: center;
+}
+
+.form-header h2,
+.detail-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.form-header h2 .ik,
+.detail-header h2 .ik {
+    font-size: 1.2em;
+}
+
+.form-body {
+    padding: 0;
+}
+
+.detail-body {
+    padding: 0;
+}
+
+/* --- Alert'lar (animasyonsuz, duz zemin + sol renk seridi) --- */
+.alert {
+    border: none;
+    border-left: 4px solid var(--ad-lacivert);
+    border-radius: var(--ad-radius-sm);
+    box-shadow: none;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: .95rem;
+}
+
+.alert-success {
+    background: var(--ad-yesil-acyk);
+    border-left-color: var(--ad-yesil);
+    color: var(--ad-yesil-metin-koyu);
+}
+
+.alert-danger {
+    background: var(--ad-danger-acyk);
+    border-left-color: var(--ad-danger);
+    color: var(--ad-danger-metin-koyu);
+}
+
+.alert-warning {
+    background: var(--ad-warn-acyk);
+    border-left-color: #ffc107;
+    color: var(--ad-warn);
+}
+
+.alert-info {
+    background: var(--ad-lacivert-acyk);
+    border-left-color: var(--ad-lacivert);
+    color: var(--ad-lacivert-metin);
+}
+
+/* --- Butonlar --- */
+.btn {
+    border-radius: var(--ad-radius-sm);
+    font-weight: 600;
+    padding: .55rem 1.15rem;
+    border: 1px solid transparent;
+    transition: var(--ad-gecis);
+}
+
+.btn:hover,
+.btn:focus {
+    text-decoration: none;
+}
+
+.btn:active {
+    transform: none;
+}
+
+.button-container .btn,
+.form-page .btn,
+.main-actions-container .btn,
+.back-button-container .btn {
+    min-width: 150px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.button-container .btn .ik,
+.form-page .btn .ik,
+.main-actions-container .btn .ik {
+    font-size: 1.05em;
+}
+
+.btn-primary {
+    background: var(--ad-yesil);
+    border-color: var(--ad-yesil);
+    color: var(--ad-marka-metin);
+    box-shadow: 0 1px 2px rgba(15, 81, 50, .18);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--ad-yesil-orta);
+    border-color: var(--ad-yesil-orta);
+    color: var(--ad-marka-metin);
+    box-shadow: var(--ad-golge);
+}
+
+.btn-danger {
+    background: var(--ad-danger);
+    border-color: var(--ad-danger);
+    color: var(--ad-marka-metin);
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background: #bb2d3b;
+    border-color: #b02a37;
+    color: var(--ad-marka-metin);
+}
+
+.btn-info {
+    background: var(--ad-lacivert);
+    border-color: var(--ad-lacivert);
+    color: var(--ad-marka-metin);
+}
+
+.btn-info:hover,
+.btn-info:focus {
+    background: #0a2f52;
+    border-color: #0a2f52;
+    color: var(--ad-marka-metin);
+}
+
+.btn-warning {
+    background: var(--ad-amber);
+    border-color: var(--ad-amber);
+    color: var(--ad-marka-metin);
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+    background: #92450b;
+    color: var(--ad-marka-metin);
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 20px;
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+}
+
+.info-text {
+    color: var(--ad-metin-soluk);
+    font-style: italic;
+    margin: 18px 0;
+    padding: 14px 16px;
+    background: var(--ad-lacivert-acyk);
+    border-left: 4px solid var(--ad-lacivert);
+    border-radius: var(--ad-radius-sm);
+    text-align: center;
+}
+
+.back-button-container {
+    margin-bottom: 20px;
+}
+
+/* --- Formlar --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--ad-metin);
+    font-weight: 600;
+    font-size: .95rem;
+    margin-bottom: 6px;
+}
+
+.required-label:after {
+    content: ' *';
+    color: var(--ad-danger-metin);
+    font-weight: 700;
+}
+
+.required-note {
+    color: var(--ad-danger-metin);
+    font-size: .85rem;
+    font-style: italic;
+    text-align: right;
+    margin-top: 8px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-input-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: .6rem .85rem;
+    font-size: .95rem;
+    color: var(--ad-metin);
+    transition: var(--ad-gecis);
+}
+
+.form-control:focus {
+    border-color: var(--ad-yesil);
+    box-shadow: var(--ad-focus);
+    outline: none;
+    color: var(--ad-metin);
+}
+
+.form-control:required {
+    border-left: 3px solid var(--ad-yesil-acyk);
+}
+
+textarea.form-control {
+    min-height: 150px;
+    resize: vertical;
+}
+
+select.form-control {
+    cursor: pointer;
+    padding-right: 2.2rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230d3b66' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    background-size: 14px 12px;
+}
+
+.form-hint {
+    color: var(--ad-metin-soluk);
+    font-size: .85rem;
+    margin-top: 5px;
+}
+
+.help-block {
+    display: block;
+    color: var(--ad-metin-soluk);
+    font-size: .85rem;
+    line-height: 1.45;
+    margin-top: 6px;
+}
+
+/* Form basligi (kart headersi olmayan formlar: kullanici ekle/duzelt) */
+.form-title {
+    color: var(--ad-lacivert-metin);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ad-kenar);
+}
+
+/* Sifre goster/gizle (login harici admin formlari) */
+.password-wrapper {
+    position: relative;
+    display: block;
+}
+
+.password-wrapper .form-control {
+    padding-right: 2.6rem;
+}
+
+.password-wrapper .password-toggle {
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-metin-soluk);
+    cursor: pointer;
+    z-index: 4;
+    transition: var(--ad-gecis);
+}
+
+.password-wrapper .password-toggle:hover {
+    color: var(--ad-yesil-metin);
+    background: var(--ad-yesil-acyk);
+}
+
+.ck-editor__editable {
+    min-height: 220px;
+    border-radius: var(--ad-radius-sm) !important;
+    border: 1px solid var(--ad-input-kenar) !important;
+    transition: var(--ad-gecis);
+}
+
+.ck-editor__editable:focus {
+    border-color: var(--ad-yesil) !important;
+    box-shadow: var(--ad-focus) !important;
+}
+
+/* Koyu tema: CKEditor 5'in ucretsiz (classic) skin'inde tema destegi yoktur.
+   Yalnizca yazim alani koyuya cevrilir; arac cubugu iki temada da okunabilen
+   orta gri tonunda bilincli olarak birakilir. */
+html[data-bs-theme="dark"] .ck-editor__editable,
+html[data-bs-theme="dark"] .ck-editor__editable .ck-content {
+    /* CKEditor'in kendi kurali (.ck.ck-editor__main > .ck-editor__editable)
+       daha yukari spesifiklikte oldugu icin background-color !important ile
+       ezilir; aksi halde acik metin beyaz zemine dusup okunmaz hale gelir. */
+    background-color: var(--ad-beyaz) !important;
+    color: var(--ad-metin) !important;
+}
+
+html[data-bs-theme="dark"] .ck-editor__editable:not(.ck-focused) {
+    border-color: var(--ad-input-kenar) !important;
+}
+
+/* --- Tablolar --- */
+.table-responsive {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    margin-top: 4px;
+    overflow-x: auto;
+}
+
+.table {
+    background: var(--ad-beyaz);
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.table > thead > tr > th {
+    background: var(--ad-lacivert-acyk);
+    color: var(--ad-lacivert-metin);
+    border-bottom: 1px solid var(--ad-kenar);
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    padding: 12px 14px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table > tbody > tr > td {
+    border-bottom: 1px solid var(--ad-kenar);
+    padding: 12px 14px;
+    vertical-align: middle;
+    text-align: center;
+    transition: var(--ad-gecis);
+}
+
+.table > tbody > tr:hover > td {
+    background: var(--ad-satir-hover);
+}
+
+/* Sabit genislik yerine icerige gore daralan kolonlar; metin kolonlari esner */
+.table .price-cell,
+.table .action-buttons {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-buttons .btn {
+    padding: .34rem .6rem;
+    line-height: 1;
+    font-size: .82rem;
+    min-width: auto;
+}
+
+/* Tablo aksiyon butonlari kucuk; Lucide'in 2px cizgisi bu boyutta FA'nin
+   dolgulu ikonlarindan hafif kaliyor, kalinliga biraz eklenir. */
+.action-buttons .btn .ik {
+    font-size: .95rem;
+    stroke-width: 2.25;
+}
+
+/* --- Tablo sutun siralama (admin/urun/liste.php) --- */
+.siralana-col a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.siralana-col a:hover {
+    color: var(--ad-yesil);
+}
+
+.siralana-col .sira-pasif {
+    opacity: .35;
+    font-size: .85em;
+}
+
+.siralana-col .sira-aktif {
+    opacity: 1;
+    color: var(--ad-yesil);
+    font-size: .9em;
+}
+
+.siralana-col.aktif {
+    color: var(--ad-yesil);
+}
+
+.checkItem,
+#checkAll {
+    cursor: pointer;
+    margin: 0;
+    accent-color: var(--ad-yesil);
+}
+
+.price-cell {
+    color: var(--ad-metin);
+    font-weight: 700;
+    font-size: .95rem;
+}
+
+.price-cell:after {
+    content: ' ₺';
+    color: var(--ad-yesil-metin-koyu);
+    font-weight: 700;
+}
+
+.price-badge,
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: .85rem;
+    font-weight: 600;
+    border-left: 3px solid var(--ad-yesil);
+    background: var(--ad-yesil-acyk);
+    color: var(--ad-yesil-metin-koyu);
+}
+
+.category-badge {
+    border-left-color: var(--ad-lacivert);
+    background: var(--ad-lacivert-acyk);
+    color: var(--ad-lacivert-metin);
+}
+
+.empty-category {
+    color: var(--ad-metin-soluk);
+    font-style: italic;
+}
+
+.stok-hucre {
+    font-weight: 600;
+    color: var(--ad-yesil-metin);
+}
+
+.stok-yok {
+    color: var(--ad-danger-metin);
+    font-size: .85rem;
+    font-style: italic;
+}
+
+.fiyat {
+    color: var(--ad-yesil-metin-koyu);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.new-badge {
+    display: inline-block;
+    background: var(--ad-yesil);
+    color: var(--ad-marka-metin);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: .95rem;
+    margin-left: 12px;
+}
+
+.id-badge {
+    display: inline-block;
+    background: var(--ad-lacivert);
+    color: var(--ad-marka-metin);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: .95rem;
+    margin-left: 12px;
+}
+
+.id-info-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.id-label {
+    color: var(--ad-metin-soluk);
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.id-value {
+    display: inline-block;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-lacivert-metin);
+    font-weight: 700;
+    font-size: .95rem;
+    padding: 4px 14px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.text-success {
+    color: var(--ad-yesil-metin) !important;
+    font-weight: 600;
+}
+
+.text-danger {
+    color: var(--ad-danger-metin) !important;
+    font-weight: 600;
+}
+
+/* Tema-duyarli metin yardimcilari - sablonlarda satir ici sabit renk
+   (color:#0d3b66 / #6b7280) kullanimi yerine bu siniflar tercih edilir;
+   aksi halde koyu temada okunmaz olurlar. */
+.text-lacivert {
+    color: var(--ad-lacivert-metin) !important;
+}
+
+.text-soluk {
+    color: var(--ad-metin-soluk) !important;
+}
+
+/* Bootstrap'in text-success/text-danger utility siniflari tema-duyarli degildir
+   (#198754 ve #dc3545 iki temada da ayni kalir); koyu yuzeyde 3.4:1'e duserler.
+   Yalnizca koyu temada ezilir ki acik temadaki gorunum degismez. */
+html[data-bs-theme="dark"] body.admin .text-success,
+html[data-bs-theme="dark"] body.login-page .text-success {
+    color: var(--ad-yesil-metin) !important;
+}
+
+html[data-bs-theme="dark"] body.admin .text-danger,
+html[data-bs-theme="dark"] body.login-page .text-danger {
+    color: var(--ad-danger-metin) !important;
+}
+
+/* --- Arama ve aksiyon satiri --- */
+.main-actions-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.left-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.right-search {
+    display: flex;
+    align-items: center;
+}
+
+.search-form {
+    width: 100%;
+    max-width: 360px;
+}
+
+.search-form .input-group {
+    border: 1px solid var(--ad-kenar);
+    border-radius: 50px;
+    overflow: hidden;
+    transition: var(--ad-gecis);
+}
+
+.search-form .input-group:focus-within {
+    border-color: var(--ad-yesil);
+    box-shadow: var(--ad-focus);
+}
+
+.search-form .form-control {
+    border: none;
+    border-radius: 0;
+    padding: 10px 18px;
+}
+
+.search-form .form-control:focus {
+    box-shadow: none;
+}
+
+.btn-search {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+    background: var(--ad-yesil);
+    border: none;
+    border-left: 1px solid var(--ad-yesil-orta);
+    border-radius: 0;
+    padding: 0 18px;
+    color: var(--ad-marka-metin);
+}
+
+.btn-search:hover,
+.btn-search:focus {
+    background: var(--ad-yesil-orta);
+    color: var(--ad-marka-metin);
+}
+
+.btn-search .ik {
+    font-size: 1rem;
+}
+
+/* --- Sayfalama --- */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    padding: 14px 16px;
+    margin-top: 20px;
+}
+
+.pagination-left,
+.pagination-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pagination {
+    --bs-pagination-color: var(--ad-lacivert-metin);
+    --bs-pagination-hover-bg: var(--ad-yesil-acyk);
+    --bs-pagination-hover-color: var(--ad-yesil-metin-koyu);
+    --bs-pagination-hover-border-color: var(--ad-yesil-acyk);
+    --bs-pagination-focus-color: var(--ad-yesil-metin-koyu);
+    --bs-pagination-focus-bg: var(--ad-yesil-acyk);
+    --bs-pagination-focus-box-shadow: var(--ad-focus);
+    --bs-pagination-active-bg: var(--ad-yesil);
+    --bs-pagination-active-border-color: var(--ad-yesil);
+    --bs-pagination-disabled-bg: var(--ad-zemin);
+    --bs-pagination-disabled-color: var(--ad-metin-soluk);
+    --bs-pagination-disabled-border-color: var(--ad-kenar);
+    --bs-pagination-border-color: var(--ad-kenar);
+    --bs-pagination-border-radius: var(--ad-radius-sm);
+    gap: 4px;
+    margin: 0;
+}
+
+.pagination .page-link {
+    font-weight: 600;
+    min-width: 38px;
+    text-align: center;
+    padding: .4rem .6rem;
+}
+
+.page-jump-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-input {
+    width: 70px;
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: .35rem .5rem;
+    text-align: center;
+    font-weight: 600;
+    transition: var(--ad-gecis);
+}
+
+.page-input:focus {
+    border-color: var(--ad-yesil);
+    box-shadow: var(--ad-focus);
+    outline: none;
+}
+
+.page-jump-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ad-lacivert);
+    border: none;
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-marka-metin);
+    font-weight: 600;
+    padding: .4rem .8rem;
+    cursor: pointer;
+    transition: var(--ad-gecis);
+}
+
+.page-jump-btn:hover,
+.page-jump-btn:focus {
+    background: #0a2f52;
+    color: var(--ad-marka-metin);
+}
+
+/* --- Detay sayfalari (urun/kategori detay) --- */
+.product-detail-container,
+.product-form-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 8px;
+}
+
+/* min() genislikleri: 320px gibi cok dar ekranlarda sabit alt sinir sayfayi
+   yatay tasirir; kapsayici dar oldugunda 100% kazaniyor, genis ekran ayni kalir. */
+.product-images,
+.upload-section {
+    flex: 1;
+    min-width: min(300px, 100%);
+    max-width: 420px;
+}
+
+.product-info,
+.form-section {
+    flex: 2;
+    min-width: min(320px, 100%);
+}
+
+.product-title,
+.product-title-input {
+    color: var(--ad-lacivert-metin);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ad-kenar);
+}
+
+.gallery-title,
+.upload-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ad-lacivert-metin);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ad-kenar);
+}
+
+.gallery-title:before,
+.upload-title:before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: var(--ad-yesil);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3e%3C/svg%3e") center/contain no-repeat;
+}
+
+.info-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--ad-beyaz);
+}
+
+.info-table td {
+    border-bottom: 1px solid var(--ad-kenar);
+    padding: 11px 14px;
+    vertical-align: top;
+    line-height: 1.6;
+}
+
+.info-table td:first-child {
+    width: 190px;
+    background: var(--ad-lacivert-acyk);
+    border-right: 1px solid var(--ad-kenar);
+    color: var(--ad-lacivert-metin);
+    font-weight: 600;
+}
+
+.info-table tr:last-child td {
+    border-bottom: none;
+}
+
+.description-content {
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-metin);
+    font-size: .95rem;
+    line-height: 1.7;
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.date-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ad-zemin);
+    border-left: 3px solid var(--ad-lacivert);
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-metin-soluk);
+    font-weight: 600;
+    font-size: .85rem;
+    padding: 8px 12px;
+    margin: 6px 0;
+}
+
+/* --- Resim galerisi / onizleme --- */
+.main-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    min-height: 220px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.main-image {
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    padding: 8px;
+}
+
+.thumbnail-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.thumbnail-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    background: var(--ad-beyaz);
+    border: 2px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--ad-gecis);
+}
+
+.thumbnail-item:hover {
+    border-color: var(--ad-yesil-acyk);
+    box-shadow: var(--ad-golge);
+}
+
+.thumbnail-item.active {
+    border-color: var(--ad-yesil);
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, .18);
+}
+
+.thumbnail-img-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--ad-zemin);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.thumbnail-img {
+    width: 100%;
+    height: 100%;
+    max-height: 100px;
+    object-fit: contain;
+    padding: 4px;
+}
+
+.thumbnail-number {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ad-lacivert);
+    color: var(--ad-marka-metin);
+    border-radius: 50%;
+    font-size: .7rem;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.thumbnail-remove,
+.delete-image-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ad-danger);
+    border: none;
+    border-radius: 50%;
+    color: var(--ad-marka-metin);
+    font-size: .75rem;
+    cursor: pointer;
+    z-index: 3;
+    transition: var(--ad-gecis);
+}
+
+.thumbnail-remove:hover,
+.delete-image-btn:hover {
+    background: #bb2d3b;
+    color: var(--ad-marka-metin);
+}
+
+.thumbnail-info {
+    background: var(--ad-zemin);
+    border-top: 1px solid var(--ad-kenar);
+    color: var(--ad-metin-soluk);
+    font-size: .75rem;
+    padding: 4px 6px;
+    margin-top: 4px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- Mevcut ek resimler (duzelt sayfasi) --- */
+.current-images-container {
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: 14px;
+    margin-bottom: 18px;
+}
+
+.current-images-grid,
+.thumbnail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.thumbnail-grid {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+}
+
+.current-image-item {
+    position: relative;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: 6px;
+    overflow: hidden;
+    transition: var(--ad-gecis);
+}
+
+.current-image-item:hover {
+    border-color: var(--ad-yesil-acyk);
+    box-shadow: var(--ad-golge);
+}
+
+.current-image-item:hover .delete-image-btn {
+    opacity: 1;
+}
+
+.current-image {
+    width: 100%;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.current-image-info {
+    color: var(--ad-metin-soluk);
+    font-size: .75rem;
+    margin-top: 4px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- Dosya secme --- */
+.file-input-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-file-label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--ad-zemin);
+    border: 2px dashed var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-lacivert-metin);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: 22px 14px;
+    cursor: pointer;
+    transition: var(--ad-gecis);
+}
+
+.custom-file-label:hover {
+    background: var(--ad-yesil-acyk);
+    border-color: var(--ad-yesil);
+    box-shadow: var(--ad-golge);
+}
+
+.image-preview-container {
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: 12px;
+    margin-top: 14px;
+    text-align: center;
+}
+
+.image-preview-title {
+    display: block;
+    color: var(--ad-lacivert-metin);
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 220px;
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius-sm);
+    padding: 6px;
+    margin: 4px;
+}
+
+/* --- Kategori secimi (urun ekle/duzelt) --- */
+.category-selection-container {
+    position: relative;
+}
+
+.category-display {
+    margin-top: 10px;
+}
+
+.category-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ad-zemin);
+    border: 1px solid var(--ad-kenar);
+    border-radius: 50px;
+    color: var(--ad-lacivert-metin);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: 6px 14px;
+}
+
+.selected-category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ad-yesil-acyk);
+    border: 1px solid var(--ad-yesil);
+    border-radius: 50px;
+    color: var(--ad-yesil-metin-koyu);
+    font-weight: 600;
+    padding: 8px 14px;
+}
+
+.selected-count {
+    display: inline-block;
+    background: var(--ad-lacivert);
+    color: var(--ad-marka-metin);
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    margin-left: 6px;
+}
+
+.kalan-hak {
+    display: inline-block;
+    font-size: .85rem;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+/* --- Eski Bootstrap 3 kalintisi paneller --- */
+.panel {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    margin-bottom: 20px;
+}
+
+.panel-heading {
+    background: var(--ad-zemin);
+    border-bottom: 1px solid var(--ad-kenar);
+    padding: 12px 16px;
+    border-radius: var(--ad-radius) var(--ad-radius) 0 0;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ad-lacivert-metin);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.panel-body {
+    padding: 16px;
+}
+
+/* --- Panel kartlari (ozet rakamlari) ---
+   admin/index.php ve admin/siparis/liste.php tarafindan ortak kullanilir;
+   bu yuzden Katman 2'de ve sayfa sinifindan bagimsiz `body.admin` kapsamiyla
+   durur. Renk vurgusu border-left + ikon tonundan gelir, yeni token gerekmez. */
+body.admin .panel-kartlar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+body.admin .panel-kart {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-left: 4px solid var(--ad-lacivert);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    padding: 14px 16px;
+}
+
+body.admin .panel-kart-ciro {
+    border-left-color: var(--ad-yesil);
+}
+
+body.admin .panel-kart-bekleyen {
+    border-left-color: var(--ad-warn);
+}
+
+body.admin .panel-kart-stok {
+    border-left-color: var(--ad-metin-soluk);
+}
+
+body.admin .panel-kart-ust {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+body.admin .panel-kart-ikon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--ad-radius-sm);
+    background: var(--ad-lacivert-acyk);
+    color: var(--ad-lacivert-metin);
+    font-size: 1rem;
+}
+
+body.admin .panel-kart-ciro .panel-kart-ikon {
+    background: var(--ad-yesil-acyk);
+    color: var(--ad-yesil-metin-koyu);
+}
+
+body.admin .panel-kart-bekleyen .panel-kart-ikon {
+    background: var(--ad-warn-acyk);
+    /* --ad-amber koyu temada ezilmez; ikonu --ad-warn tasir */
+    color: var(--ad-warn);
+}
+
+body.admin .panel-kart-baslik {
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--ad-metin-soluk);
+}
+
+body.admin .panel-kart-deger {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ad-metin);
+}
+
+body.admin .panel-kart-alt {
+    margin-top: 6px;
+    font-size: .82rem;
+    color: var(--ad-metin-soluk);
+}
+
+/* Kompakt varyant: liste basliginin ustundeki tek satirlik ozet (siparis listesi) */
+body.admin .panel-kartlar-kompakt {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+body.admin .panel-kart-kompakt {
+    padding: 10px 14px;
+}
+
+body.admin .panel-kart-kompakt .panel-kart-deger {
+    font-size: 1.3rem;
+}
+
+body.admin .panel-kart-kompakt .panel-kart-ikon {
+    width: 26px;
+    height: 26px;
+    font-size: .9rem;
+}
+
+body.admin .panel-kart-kompakt .panel-kart-alt {
+    margin-top: 4px;
+    font-size: .78rem;
+}
+
+/* ============================================================
+   KATMAN 3 - SAYFAYA OZEL
+   ============================================================ */
+
+/* Admin anasayfa tanitim karti */
+.pg-index .project-container {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    padding: 28px;
+    margin-top: 8px;
+}
+
+.pg-index .project-header {
+    color: var(--ad-lacivert-metin);
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.pg-index .project-header:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(to right, var(--ad-yesil), var(--ad-lacivert));
+}
+
+.pg-index .project-content {
+    color: var(--ad-metin);
+    font-size: 1rem;
+    line-height: 1.75;
+    margin-bottom: 24px;
+}
+
+.pg-index .project-content p {
+    background: var(--ad-zemin);
+    border-left: 4px solid var(--ad-yesil);
+    border-radius: var(--ad-radius-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.pg-index .project-highlight {
+    display: inline-block;
+    background: var(--ad-yesil-acyk);
+    color: var(--ad-yesil-metin-koyu);
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.pg-index .project-btn {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    background: var(--ad-yesil);
+    border: none;
+    border-radius: var(--ad-radius-sm);
+    color: var(--ad-marka-metin);
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: .3px;
+    padding: 12px 28px;
+    text-decoration: none;
+    box-shadow: var(--ad-golge);
+    transition: var(--ad-gecis);
+}
+
+.pg-index .project-btn:hover,
+.pg-index .project-btn:focus {
+    background: var(--ad-yesil-orta);
+    color: var(--ad-marka-metin);
+    text-decoration: none;
+    box-shadow: var(--ad-golge-keskin);
+}
+
+.pg-index .project-btn:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, .45);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.pg-index .project-btn:hover:after {
+    animation: ripple 1s ease-out;
+}
+
+/* Liste sayfalari: hizalama farklari (sabit px genislik yok) */
+.pg-urun-liste .table td:nth-child(3),
+.pg-urun-liste .table td:nth-child(4),
+.pg-urun-liste .table td:nth-child(6),
+.pg-urun-liste .table td:nth-child(7),
+.pg-urun-liste .table th:nth-child(3),
+.pg-urun-liste .table th:nth-child(4),
+.pg-urun-liste .table th:nth-child(6),
+.pg-urun-liste .table th:nth-child(7),
+.pg-kategori-liste .table td:nth-child(3),
+.pg-kategori-liste .table td:nth-child(4),
+.pg-kategori-liste .table th:nth-child(3),
+.pg-kategori-liste .table th:nth-child(4),
+.pg-kategori-urunler .table td:nth-child(2),
+.pg-kategori-urunler .table td:nth-child(3),
+.pg-kategori-urunler .table th:nth-child(2),
+.pg-kategori-urunler .table th:nth-child(3),
+.pg-yetkili-liste .table td:nth-child(2),
+.pg-yetkili-liste .table td:nth-child(3),
+.pg-yetkili-liste .table th:nth-child(2),
+.pg-yetkili-liste .table th:nth-child(3) {
+    text-align: left;
+}
+
+/* Site kullanicilari listesi (admin/kullanici/liste.php): sutun yapisi yetkili
+   listesinden farkli - uzun metinler sola, ID ve tarih kirilmaya karsi saglam,
+   siparis adedi dar bir kolonda ortaya. */
+.pg-kullanici-liste .table td:nth-child(2),
+.pg-kullanici-liste .table td:nth-child(3),
+.pg-kullanici-liste .table td:nth-child(4),
+.pg-kullanici-liste .table td:nth-child(5),
+.pg-kullanici-liste .table td:nth-child(6),
+.pg-kullanici-liste .table th:nth-child(2),
+.pg-kullanici-liste .table th:nth-child(3),
+.pg-kullanici-liste .table th:nth-child(4),
+.pg-kullanici-liste .table th:nth-child(5),
+.pg-kullanici-liste .table th:nth-child(6) {
+    text-align: left;
+}
+
+.pg-kullanici-liste .table td:nth-child(1),
+.pg-kullanici-liste .table th:nth-child(1) {
+    white-space: nowrap;
+}
+
+.pg-kullanici-liste .table td:nth-child(7),
+.pg-kullanici-liste .table th:nth-child(7) {
+    text-align: center;
+    white-space: nowrap;
+    width: 1%;
+}
+
+/* Islem sutununda uc simge buton (Siparisler / Duzenle / Sil) tek satirda kalsin */
+.pg-kullanici-liste .table td:last-child,
+.pg-kullanici-liste .table th:last-child {
+    white-space: nowrap;
+}
+
+/* Kullanici siparisleri (admin/kullanici/siparisler.php): numara/tarih kirilmasin,
+   islem sutunu dar kalsin; uzun sipariş no'su sola hizalanir, gerisi admin
+   varsayilaniyla (td: center) okunur. */
+.pg-kullanici-siparisler .table td:nth-child(1),
+.pg-kullanici-siparisler .table td:nth-child(2),
+.pg-kullanici-siparisler .table td:nth-child(3),
+.pg-kullanici-siparisler .table td:last-child,
+.pg-kullanici-siparisler .table th:nth-child(1),
+.pg-kullanici-siparisler .table th:nth-child(2),
+.pg-kullanici-siparisler .table th:nth-child(3),
+.pg-kullanici-siparisler .table th:last-child {
+    white-space: nowrap;
+}
+
+.pg-kullanici-siparisler .table td:nth-child(2),
+.pg-kullanici-siparisler .table th:nth-child(2) {
+    text-align: left;
+}
+
+.pg-urun-liste .table td:nth-child(4),
+.pg-kategori-liste .table td:nth-child(4),
+.pg-kategori-urunler .table td:nth-child(3) {
+    min-width: 220px;
+}
+
+/* Urun formlari: resim alaninin sabit yuksekligi kaldirildi, kart esner */
+.pg-urun-ekle .upload-card,
+.pg-urun-duzelt .upload-card {
+    min-height: 100%;
+}
+
+/* Anasayfadaki ozet satiri: kartlarin kendisi artik Katman 2'de
+   (body.admin .panel-kart), iki sayfada ortak kullaniliyor. */
+.pg-index .panel-ozet-satiri {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+/* Bildirim satiri (admin/header.php flash) ust bara yapismasin.
+   Bu kural sayfadan bagimsiz: admin/header.php her sayfada basilir. */
+.admin-flash {
+    padding-top: 8px;
+}
+
+/* ============================================================
+   SIPARIS SAYFALARI (pg-siparis-liste / pg-siparis-detay)
+   ============================================================ */
+.pg-siparis-liste .durum-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pg-siparis-liste .durum-secim {
+    width: auto;
+    min-width: 132px;
+}
+
+/* Islem sutunu secim kutusu + butonu tasir, daralmasin */
+.pg-siparis-liste .table td:last-child,
+.pg-siparis-liste .table th:last-child {
+    min-width: 250px;
+}
+
+.pg-siparis-liste .price-cell {
+    white-space: nowrap;
+    text-align: left;
+}
+
+/* Arama, sayfa basliginin satirinda: baslik solda, arama + durum filtresi sagda.
+   Alt cizgi h1'den container'a tasinir; h1 artik flex ogesi oldugu icin kendi
+   cizgisi yalnizca kelimenin altina daralirdi. */
+.pg-siparis-liste .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 2px solid var(--ad-kenar);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+}
+
+.pg-siparis-liste .page-header h1 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+/* 90px'lik gradyan vurgu, container'in padding (12px) + border (2px) toplamıyla
+   alt cizginin uzerine oturur. */
+.pg-siparis-liste .page-header h1:after {
+    bottom: -14px;
+}
+
+/* Numara/alici aramasi ile durum filtresi ayni satirda: alanlar daralmasin */
+.pg-siparis-liste .search-form {
+    max-width: 520px;
+}
+
+.pg-siparis-liste .search-form .form-control {
+    min-width: 190px;
+}
+
+.pg-siparis-detay .siparis-ozet-kart {
+    background: var(--ad-beyaz);
+    border: 1px solid var(--ad-kenar);
+    border-radius: var(--ad-radius);
+    box-shadow: var(--ad-golge);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.pg-siparis-detay .siparis-baslik-satiri {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--ad-kenar);
+}
+
+.pg-siparis-detay .siparis-numara {
+    font-family: var(--bs-font-monospace);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ad-lacivert-metin);
+    margin-right: 8px;
+}
+
+/* Urun detayinda solundan vurgu cizgisiyle tasarlanan rozet siniflari,
+   siparis kartinda egri bir 'parantez' gibi gorunur; burada cizgi kaldirilir */
+.pg-siparis-detay .price-badge,
+.pg-siparis-detay .category-badge,
+.pg-siparis-detay .date-info {
+    border-left: 0;
+}
+
+.pg-siparis-detay .siparis-bolum-basligi {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+.pg-siparis-detay .table img {
+    border-radius: var(--ad-radius-sm);
+}
+
+@media (max-width: 575.98px) {
+    .pg-siparis-liste .table td:last-child,
+    .pg-siparis-liste .table th:last-child {
+        min-width: 0;
+    }
+
+    .pg-siparis-liste .durum-form {
+        display: flex;
+        margin-top: 6px;
+    }
+
+    /* Baslik ile arama ayrik satirlara dussun ve arama tam genislik alsin
+       (ustteki .pg-siparis-liste .page-header flex kuralinin devami). */
+    .pg-siparis-liste .page-header {
+        align-items: stretch;
+    }
+
+    .pg-siparis-liste .page-header .search-form {
+        max-width: none;
+    }
+
+    .pg-siparis-liste .page-header .right-search {
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   ANIMASYONLAR - yalnizca islevsel olanlar
+   (done ikon animasyonu .ik-spin kuralindan gelir - content/css/style.css)
+   ============================================================ */
+@keyframes ripple {
+    0%   { transform: scale(0, 0) translate(-50%, -50%); opacity: .5; }
+    100% { transform: scale(40, 40) translate(-50%, -50%); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pg-index .project-btn:hover:after {
+        animation: none;
+    }
+
+    * {
+        transition-duration: .01ms !important;
+    }
+}
+
+/* ============================================================
+   GIRIS SAYFASI (body.login-page - panelin diger sayfalarina sizmaz)
+   ============================================================ */
+body.login-page {
+    margin: 0;
+    padding: calc(24px + env(safe-area-inset-top)) 24px 24px;
+    min-height: 100vh;
+    /* Mobil tarayici cubugu: destekleyen tarayici 100dvh'ye gecer */
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ad-lacivert);
+    color: var(--ad-metin);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Site slider'indakiyle ayni ince doku */
+body.login-page:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 26px);
+    pointer-events: none;
+}
+
+body.login-page .login-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: min(460px, 100%);
+    margin: auto;
+}
+
+body.login-page .login-card {
+    position: relative;
+    background: var(--ad-beyaz);
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(4, 20, 38, .35);
+    padding: 2.5rem;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Ust marka seridi */
+body.login-page .login-card:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(to right, var(--ad-yesil), var(--ad-lacivert));
+}
+
+body.login-page .logo-container {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+body.login-page .logo-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--ad-yesil), var(--ad-yesil-koyu));
+    box-shadow: 0 6px 16px rgba(15, 81, 50, .28);
+}
+
+body.login-page .logo-icon .ik {
+    font-size: 1.75rem;
+    color: var(--ad-marka-metin);
+}
+
+body.login-page .login-baslik {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ad-lacivert-metin);
+    margin: 0 0 .25rem;
+    letter-spacing: .2px;
+}
+
+body.login-page .login-baslik strong {
+    color: var(--ad-yesil-metin);
+}
+
+body.login-page .login-alt-baslik {
+    color: var(--ad-yesil-metin);
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 0 0 .35rem;
+}
+
+body.login-page .login-aciklama {
+    color: var(--ad-metin-soluk);
+    font-size: .92rem;
+    margin: 0;
+}
+
+body.login-page .input-group {
+    position: relative;
+}
+
+body.login-page .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ad-yesil-metin);
+    /* Bootstrap ".input-group>.form-control:focus{z-index:5}" kurali odaklaninca
+       input arka planini ikonun ustune ciziyor; ikon uste aliniyor. */
+    z-index: 6;
+    pointer-events: none;
+}
+
+body.login-page .form-control {
+    padding: .8rem 2.9rem;
+    border-radius: 10px;
+    border: 1px solid var(--ad-input-kenar);
+    background: var(--ad-input-zemin);
+    font-size: .95rem;
+}
+
+body.login-page .form-control:focus {
+    background: var(--ad-beyaz);
+    border-color: var(--ad-yesil);
+    box-shadow: var(--ad-focus);
+}
+
+body.login-page .password-toggle {
+    position: absolute;
+    right: .6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--ad-metin-soluk);
+    font-size: 1rem;
+    padding: .25rem .4rem;
+    cursor: pointer;
+    /* Odakta input'un uzerinde kalmali (Bootstrap focus z-index:5). */
+    z-index: 6;
+    transition: var(--ad-gecis);
+}
+
+body.login-page .password-toggle:hover {
+    color: var(--ad-yesil-metin);
+}
+
+body.login-page .password-toggle:focus-visible {
+    outline: 2px solid var(--ad-yesil);
+    outline-offset: 2px;
+    color: var(--ad-yesil-metin);
+}
+
+body.login-page .btn-login {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    background: var(--ad-yesil);
+    border: none;
+    border-radius: 10px;
+    color: var(--ad-marka-metin);
+    font-weight: 600;
+    padding: .8rem;
+    transition: var(--ad-gecis);
+}
+
+body.login-page .btn-login:hover,
+body.login-page .btn-login:focus {
+    background: var(--ad-yesil-orta);
+    color: var(--ad-marka-metin);
+    box-shadow: 0 6px 16px rgba(15, 81, 50, .25);
+}
+
+body.login-page .btn-login:disabled {
+    opacity: .6;
+    box-shadow: none;
+}
+
+body.login-page .login-alt {
+    border-top: 1px solid var(--ad-kenar);
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+body.login-page .login-alt .text-muted {
+    color: var(--ad-metin-soluk) !important;
+    font-size: .85rem;
+    margin-bottom: 0;
+}
+
+/* ============================================================
+   .pg-kategori-detay  (admin/kategori/detay.php)
+   ============================================================ */
+
+/* Aciklama urun detay ile ayni .description-content yapisini kullanir;
+   tablo hucresinde ic ice cerceve olmasin diye kutu bosluklari sifirlanir. */
+.pg-kategori-detay .info-table .description-content {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================================================
+   RESPONSIVE (Bootstrap ile ayni esikler: 991.98 / 767.98 / 575.98)
+   Kurallar yalnizca dar ekranlarda uygulanir; masaustu gorunumu degismez.
+   ============================================================ */
+
+/* Tablet ve asagi: ust bar menusu katlanir (navbar-expand-lg) */
+@media (max-width: 991.98px) {
+    /* Katlanik bar ~58px; govde boslugu barra gore kisalir */
+    body.admin {
+        padding-top: calc(72px + env(safe-area-inset-top));
+    }
+
+    /* Menu 4 baglanti + 2 butonla ekran yukselligini asabilir; tasmasina
+       izin vermek yerine panel kendi kaydirmasini yapsin. */
+    .admin-topbar .navbar-collapse {
+        max-height: calc(100vh - 76px - env(safe-area-inset-top));
+        max-height: calc(100dvh - 76px - env(safe-area-inset-top));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Katlanik menudeki tema/cikis butonlari dokunma hedefi olur */
+    .btn-topbar-outline {
+        min-height: 44px;
+    }
+
+    body.admin .tema-btn {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .form-card,
+    .upload-card,
+    .image-gallery-card,
+    .info-card,
+    .detail-card,
+    .form-container,
+    .pg-index .project-container {
+        padding: 16px;
+    }
+
+    .form-header,
+    .detail-header {
+        margin: -16px -16px 16px;
+        padding: 14px 16px;
+    }
+
+    .form-header h2,
+    .detail-header h2 {
+        flex-direction: column;
+        gap: 4px;
+        font-size: 1.15rem;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .button-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button-container .btn {
+        width: 100%;
+    }
+
+    .main-actions-container,
+    .pagination-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .left-buttons .btn {
+        flex: 1;
+    }
+
+    .search-form {
+        max-width: 100%;
+    }
+
+    .page-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .info-table td:first-child {
+        width: 130px;
+    }
+
+    .table > thead > tr > th,
+    .table > tbody > tr > td {
+        padding: 8px 10px;
+        font-size: .88rem;
+    }
+
+    .table > thead > tr > th {
+        font-size: .78rem;
+    }
+
+    /* Uzun listede yatay kaydirma ilk sutunu (secim kutusu/ID) gorunur
+       biraksin. Bootstrap hover'i !important ile boyadigi icin burada da
+       ayni sekilde ezilir; renk opak yuzeydir, altindaki hucre swimaz. */
+    .table-responsive > .table > thead > tr > th:first-child,
+    .table-responsive > .table > tbody > tr > td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: var(--ad-beyaz) !important;
+    }
+
+    .table-responsive > .table > tbody > tr:hover > td:first-child {
+        background-color: var(--ad-satir-hover) !important;
+    }
+
+    /* Serbest metin sutunu kaydirma uzunlugunu katlar; ust sinir + kelime
+       kaydirma ile tablo genisligi kontrol altina alinir. */
+    .table .aciklama-hucre {
+        max-width: 240px;
+        overflow-wrap: anywhere;
+    }
+
+    /* Ikona dayali islem butonlari parmakla basilabilir kalsin */
+    .action-buttons .btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* CKEditor: arac cubugu tek satirda tasmak yerine sarar, alan kisalir */
+    .ck-editor__editable {
+        min-height: 180px;
+    }
+
+    .ck.ck-editor {
+        max-width: 100%;
+    }
+
+    .ck.ck-toolbar > .ck-toolbar__items {
+        flex-wrap: wrap !important;
+    }
+
+    .ck.ck-editor__editable img {
+        max-width: 100%;
+    }
+
+    body.login-page .login-card {
+        padding: 1.75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .form-card,
+    .upload-card,
+    .image-gallery-card,
+    .info-card,
+    .detail-card,
+    .form-container,
+    .pg-index .project-container {
+        padding: 12px;
+    }
+
+    .form-header,
+    .detail-header {
+        margin: -12px -12px 12px;
+        padding: 12px;
+    }
+
+    .form-header h2,
+    .detail-header h2 {
+        font-size: 1.05rem;
+    }
+
+    .main-actions-container {
+        gap: 12px;
+    }
+
+    /* Kompakt ozet kartlari dar ekranda iki sutuna dussun; normal (anasayfa)
+       kartlarin davranisi bilincli olarak degistirilmez. */
+    body.admin .panel-kartlar-kompakt {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Detay bilgi tablosu: etiket sutunu daralir, icerik alanina yer acilir */
+    .info-table td:first-child {
+        width: 108px;
+    }
+
+    .info-table {
+        font-size: .9rem;
+    }
+
+    /* CKEditor ciktili aciklama/genis tablo karti uzetmesin */
+    .description-content {
+        overflow-x: auto;
+    }
+
+    .description-content img,
+    .description-content table {
+        max-width: 100%;
+    }
+
+    /* Giris karti: dar ekranda bosluk kuculur, hedefler 44px kalir */
+    body.login-page .login-card {
+        padding: 1.25rem;
+    }
+
+    body.login-page .form-control,
+    body.login-page .btn-login {
+        min-height: 44px;
+    }
+}

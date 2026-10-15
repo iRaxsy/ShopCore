@@ -1,0 +1,12 @@
+# Yukelen dosyalarin klasoru: yalnizca statik gorsel servis edilir
+Options -Indexes -ExecCGI
+
+# PHP motoru bu alt agacinda kapatilir
+php_flag engine off
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8
+RemoveType .php
+
+# Cift katman: olasi bir betik dosyasi istemciye hic gitmez
+<FilesMatch "\.(php[0-9]?|phtml)$">
+    Require all denied
+</FilesMatch>

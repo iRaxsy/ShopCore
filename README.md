@@ -10,7 +10,7 @@
 |---|---|
 | 🐘 PHP **8.0+** (PDO + `pdo_mysql` eklentisi ile) | 🖼️ `gd` eklentisi → yüklenen görsellerde `.webp` varyant üretimi ve yeniden boyutlama |
 | 🗄️ MySQL **5.7+** / MariaDB **10.4+** | ⚙️ `opcache` → dosya bazlı PHP'de performans kazanımı |
-| 🌐 Apache **2.4+** (XAMPP bu üçünü tek pakette sunar) | 📦 HTTP/2 + HTTPS → `session.cookie_secure` otomatik devreye girer |
+| 🌐 Apache **2.4+** (XAMPP bu üçünü tek pakette sunar) — IIS de desteklenir (web.config kabukları hazır) | 📦 HTTP/2 + HTTPS → `session.cookie_secure` otomatik devreye girer |
 
 > 💡 **Not:** Tüm harici asset'ler (`Bootstrap`, `SweetAlert2`, `CKEditor 5` + Türkçe çevirisi, `Quicksand` font) `content/vendor/` altında **yerel kopya** olarak durur — çevrimdışı da çalışır. CDN bağımlılığı **yoktur**.
 
@@ -47,7 +47,7 @@
 
 | Katman | Seçim | Not |
 |---|---|---|
-| 🐘 Dil | PHP **8.x** | XAMPP 8.2.12 ile test edildi |
+| 🐘 Dil | PHP **8.x** | XAMPP 8.2.12 ile test edildi; PHP 8.5 uyumlu (PDO init-komut sabiti çalışma zamanında seçilir) |
 | 🗄️ Veritabanı | MySQL / MariaDB (InnoDB) | `utf8mb4` / `utf8mb4_turkish_ci` |
 | 🔌 Veri erişimi | PDO + prepared statement | `ERRMODE_EXCEPTION`, `ATTR_EMULATE_PREPARES = false`, singleton `db()` |
 | 🎨 UI çekirdeği | Bootstrap **5.3.2** | yerel kopya: `content/vendor/bootstrap/` |
@@ -70,11 +70,13 @@
 C:\xampp\mysql\bin\mysql.exe -u root --default-character-set=utf8mb4 < sql\shopcore.sql
 ```
 
-(Alternatif: phpMyAdmin → Import → `sql/shopcore.sql`.) Tek dosya `ShopCore` veritabanını + 7 tabloyu + tohum admin'i (id=1) kurar.
+(Alternatif: phpMyAdmin → Import → `sql/shopcore.sql`.) Tek dosya `shopcore` veritabanını + 7 tabloyu + tohum admin'i (id=1) kurar. İsteğe bağlı demo veri için ayrıca `sql/ornek-veri.sql` çalıştırılabilir.
 
 **3️⃣** `config/yerel.orneke.php` → `config/yerel.php` olarak kopyala, DB bilgilerini gir (XAMPP'te `DB_SIFRE` boş kalabilir).
 
 **4️⃣** Panele gir → <http://localhost/ShopCore/admin/login.php>
+
+> 💡 IIS: klasörü site kökü yap, yeter — Apache dışı sunucuda `.htaccess` işlemez, repodaki `web.config` kabukları aynı korumaları sağlar.
 
 | 👤 Kullanıcı | 🔑 Şifre |
 |---|---|
@@ -139,6 +141,7 @@ ShopCore/
 │
 ├── config/
 │   ├── .htaccess                🔒 `Require all denied` — klasör HTTP'ye kapalı
+│   ├── web.config               🔒 IIS karşılığı (requestFiltering)
 │   ├── yerel.orneke.php         📋 Örnek şablon — kopyala → `yerel.php`
 │   └── yerel.php                🤫 Gerçek değerler (SÜRÜM KONTROLÜNE GİRMEZ)
 │
@@ -147,16 +150,18 @@ ShopCore/
 │   ├── js/                      🧩 tema.js · admin.js · sepet.js · odeme-form.js ·
 │   │                               urun-form.js · urun-detay.js ·
 │   │                               admin-urun-detay.js · admin-siparis-liste.js
-│   ├── images/                  📷 Yüklenen ürün görselleri + `default.png` + `.htaccess` ( çalıştırma engeli)
+│   ├── images/                  📷 Yüklenen ürün görselleri + `default.png` + `.htaccess` + `web.config` (çalıştırma engeli)
 │   └── vendor/                  📦 bootstrap/ · sweetalert2/ · ckeditor/ · fonts/
 │
 ├── sql/
-│   ├── .htaccess                🔒 Klasörü HTTP erişimine kapatır
-│   └── shopcore.sql             🧱 TEK dosya: şema + tohum admin (id=1)
+│   ├── .htaccess                🔒 Klasörü HTTP erişimine kapatır (+ `web.config` IIS karşılığı)
+│   ├── shopcore.sql             🧱 Şema + tohum admin (id=1) — kurulumda bu import edilir
+│   └── ornek-veri.sql           🧪 İsteğe bağlı demo veri (ürün/kategori/sipariş); kurulum zorunlu değil
 │
 ├── .editorconfig                📐 Satır sonu, girinti, charset kuralları
-├── .gitignore                   🤝 `config/yerel.php`, `content/images/*`, `/vendor/`, `sql/backup/`, IDE & OS çöpü
+├── .gitignore                   🤝 `config/yerel.php`, `content/images/*` (istisnalarla), `/vendor/`, `var/`, IDE & OS çöpü
 ├── .htaccess                    🌐 Apache yönlendirme + güvenlik başlıkları
+├── web.config                   🌐 IIS karşılığı: requestFiltering + güvenlik başlıkları
 └── README.md                    📖 Bu dosya
 ```
 
@@ -166,7 +171,7 @@ ShopCore/
 
 ## 🗄️ Veri modeli
 
-`sql/shopcore.sql` tek kaynak · **7 tablo**:
+`sql/shopcore.sql` şemanın tek kaynağı · **7 tablo**:
 
 | Tablo | Rolü |
 |---|---|
@@ -188,13 +193,15 @@ ShopCore/
 
 - 🚪 **Tek giriş:** her PHP dosyasının ilk satırı `require __DIR__.'/includes/bootstrap.php'` → `session_set_cookie_params` (HttpOnly, SameSite=Lax, Secure) header'ları çıktı başlamadan atılmaz.
 - 🛡️ **CSRF + POST-only mutasyon:** silme/düzenleme/ekleme endpoint'leri yalnız POST + `csrf_dogrula()`. Token form alanı veya `X-CSRF-Token` header'ı; GET'ten asla okunmaz. Girişte `csrf_yenile()` → fixation koruması.
+- 🚨 **Global exception handler** (`bootstrap.php`) + `db_hata_mesaji()`: yakalanmayan hata (ör. tablosuz DB) ham fatal/stack yerine düzgün uyarı sayfası olur; AJAX'a JSON; `APP_DEBUG=false` iken detay sızmaz. Sorgu hatası ile boş veri ayrılır (null vs []), footer her koşulda render olur.
 - 💉 **SQLi:** tüm sorgular PDO prepared; `LIKE` için `like_deseni()` + `ESCAPE '!'`; `LIMIT/OFFSET` `PARAM_INT`.
 - ⚠️ **XSS:** çıktıda `esc()` (htmlspecialchars ENT_QUOTES UTF-8); CKEditor HTML'i `temiz_html()` allow-list DOMDocument filtresinden geçer.
 - 🔑 **Şifre:** `password_hash(..., BCRYPT)` + `password_verify()`; eski düz-metin için lazy upgrade.
 - 🖼️ **Görsel yükleme:** `content/images/.htaccess` çalıştırmayı keser; MIME + uzantı beyaz liste; istemci dosya adı asla kullanılmaz; `gd` varsa `.webp` varyant.
 - ✅ **Sipariş:** tek kullanımlık token ile idempotency + `SELECT … FOR UPDATE` stok kilidi + transaction / `rollBack()`.
 - 🚦 **Throttling:** yönetici girişinde 5 hatada HTTP 429 + `sleep(3)`.
-- 🔐 `sql/` · `config/` · `includes/` klasörleri `.htaccess Require all denied` ile HTTP'ye kapalı.
+- 🔐 `sql/` · `config/` · `includes/` HTTP'ye kapalı: Apache'de `.htaccess Require all denied`, IIS'te karşılık gelen `web.config` (requestFiltering) ile. Kök: `.sql/.md/.log/.ini/.bak` reddi + güvenlik başlıkları; `content/images/`: script uzantıları (`.php`–`.phar`) kesilir.
+- ↪️ `redirect()` yalnız site içi hedefe yönlendirir (açık redirect koruması: `guvenli_yonlendirme_hedefi()`).
 - 🍪 Oturum adı `shopcore_sid`; giriş sonrası `session_regenerate_id(true)`.
 
 ---
@@ -205,7 +212,7 @@ ShopCore/
 |---|---|---|
 | `APP_DEBUG` | `false` | 🐞 yayında kapalı |
 | `LOG_DOSYASI` | `null` | web kökü dışı |
-| `DB_HOST` · `DB_ADI` · `DB_KULLANICI` · `DB_SIFRE` | `localhost` · `ShopCore` · `root` · `''` | 🔌 |
+| `DB_HOST` · `DB_ADI` · `DB_KULLANICI` · `DB_SIFRE` | `localhost` · `shopcore` · `root` · `''` | 🔌 |
 | `KARGO_ESIGI` · `KARGO_UCRETI` | `1000` · `99.99` | 🚚 eşik ve üzeri ücretsiz |
 | `DEFAULT_GORSEL` | `default.png` | 🖼️ |
 | `RESIM_MAX_GENISLIK` · `RESIM_KART_GENISLIK` | `1200` · `400` | 📐 `.webp` varyant |
@@ -227,7 +234,7 @@ ShopCore/
 2. 🔑 `DB_SIFRE` boş değil, güçlü bir değer.
 3. 👑 id=1 ana yönetici şifresini `admin/yetkili/duzelt.php?id=1` ile değiştir (min 8 kr).
 4. 🧱 `sql/shopcore.sql` içindeki tohum INSERT'i sil ya da kendi hash'inle değiştir.
-5. 📂 `content/images/` yazma izni; `sql/` · `config/` · `includes/` `.htaccess`'li.
+5. 📂 `content/images/` yazma izni; `sql/` · `config/` · `includes/` korumalı (Apache: `.htaccess`, IIS: `web.config`).
 6. ✉️ İletişim formu + tam sipariş akışını bir kez elle test et.
 7. 🔐 HTTPS'i etkinleştir (`session.cookie_secure` otomatik devreye girer).
 

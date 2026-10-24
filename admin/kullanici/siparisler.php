@@ -68,7 +68,7 @@ try {
     $ozet_stmt->execute([$id]);
     $ozet = $ozet_stmt->fetch(PDO::FETCH_ASSOC) ?: $ozet;
 } catch (PDOException $e) {
-    admin_hata('Veritabanı hatası: İşlem sırasında bir sorun oluştu.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'Veritabanı hatası: İşlem sırasında bir sorun oluştu.'), $e->getMessage(), 500);
 }
 
 $son_tarih = ($ozet['son_tarih'] !== null && $ozet['son_tarih'] !== '')

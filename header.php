@@ -121,6 +121,12 @@ if ($bu_sayfa === 'urundetay.php' && !empty($urunadi)) {
 
                             if ($kategoriler === null) {
                                 echo "<li><a class='dropdown-item text-danger' href='#'>Kategoriler yüklenemedi</a></li>";
+                            } elseif ($kategoriler === []) {
+                                // Bos liste: calismayan # link yerine Bootstrap'in menu ici
+                                // metin etiketi (.dropdown-item-text) kullanılır. text-nowrap:
+                                // .dropdown-item-text'te white-space: nowrap YOK, mesaj butondan
+                                // genis oldugu icin satir kiriliyor; tek satirda kalsin.
+                                echo '<li><p class="dropdown-item-text text-muted text-nowrap mb-0">Aktif bir kategori yok</p></li>';
                             } else {
                                 foreach ($kategoriler as $kategori) {
                                     $url = url('urunler.php', [

@@ -40,9 +40,14 @@
                     $veri = db()->query('SELECT id, urunadi, aciklama, fiyat, resim FROM urunler ORDER BY fiyat LIMIT 0,3')->fetchAll(PDO::FETCH_ASSOC) ?: [];
                 } catch (PDOException $e) {
                     error_log('footer firsat urunleri: ' . $e->getMessage());
-                    $veri = [];
+                    $veri = null; // [] degil: sorgu hatasi ile bos tablo ayrilsin
                 }
-                foreach ($veri as $kayit) { 
+                if ($veri === null) {
+                    echo '<p class="text-light opacity-75 mb-0">Ürünler yüklenemedi.</p>';
+                } elseif ($veri === []) {
+                    echo '<p class="text-light opacity-75 mb-0">Aktif ürün yok.</p>';
+                } else {
+                    foreach ($veri as $kayit) {
                 ?>
                 <div class="row mb-3 align-items-center">
                     <div class="col-3">
@@ -55,7 +60,8 @@
                         <span class="badge bg-success p-2"><?= esc(para($kayit['fiyat'])) ?>&#8378;</span>
                     </div>
                 </div>
-                <?php } ?>
+                <?php } }
+                ?>
             </div>
             <div class="col-md-4">
                 <h4 class="text-white mb-3">İletişim</h4>

@@ -41,7 +41,7 @@ try {
     $kategoriler = $con->query("SELECT id, kategoriadi FROM kategoriler ORDER BY kategoriadi")->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
-    admin_hata('HATA: Ürün bilgileri yüklenemedi.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'HATA: Ürün bilgileri yüklenemedi.'), $e->getMessage(), 500);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

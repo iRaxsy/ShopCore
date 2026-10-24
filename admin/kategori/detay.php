@@ -26,7 +26,7 @@ try {
     $aciklama = $kayit['aciklama'];
 
 } catch (PDOException $e) {
-    admin_hata('HATA: Kayıt yüklenemedi.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'HATA: Kayıt yüklenemedi.'), $e->getMessage(), 500);
 }
 
 include "../header.php";

@@ -42,7 +42,7 @@ try {
     $kayit_sayisi = (int)$toplam_kayit->fetchColumn();
     $toplam_sayfa = (int)ceil($kayit_sayisi / $sayfa_kayit_sayisi);
 } catch (PDOException $e) {
-    admin_hata('Veritabanı hatası: İşlem sırasında bir sorun oluştu.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'Veritabanı hatası: İşlem sırasında bir sorun oluştu.'), $e->getMessage(), 500);
 }
 
 include "../header.php";

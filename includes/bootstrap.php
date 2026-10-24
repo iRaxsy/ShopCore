@@ -143,3 +143,59 @@ function app_session_start()
     // Sepet altyapisi (eski header.php:2-4 davranisi korunur)
     $_SESSION['sepet'] = isset($_SESSION['sepet']) ? $_SESSION['sepet'] : array();
 }
+
+/**
+ * Kuresel guvenlik agi: hicbir yerde yakalanmayan istisnalar (oz. tablosuz
+ * veritabanindaki 42S02) artik ham fatal + stack trace yerine duzgun, tek
+ * parcali bir uyari sayfasi gosterir. Sablonlar (header/footer) DB'ye muhtac
+ * oldugundan sayfa BAGIMSIZ (inline stilli) basilir.
+ */
+set_exception_handler(function (Throwable $e) {
+    error_log('Yakalanmayan hata: ' . get_class($e) . ' - ' . $e->getMessage());
+
+    $mesaj = db_hata_mesaji($e, 'Beklenmeyen bir hata oluştu.');
+
+    try {
+        if (app_is_ajax()) {
+            // AJAX/fetch ucuna HTML iskelet yerine JSON don; response.json()
+            // okuyan turler (urun-form.js) SyntaxError almaz. Anahtar seti
+            // sepete_ekle (success) ve csrf/yetki (status) sekilleriyle bagdasir.
+            if (!headers_sent()) {
+                http_response_code(500);
+                header('Content-Type: application/json; charset=utf-8');
+            }
+            echo json_encode([
+                'success' => false,
+                'status'  => 'error',
+                'message' => APP_DEBUG ? $e->getMessage() : $mesaj,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        if (headers_sent()) {
+            // Kismi cikti var: tam iskelet basma, yalnizca kisa bandi ekle.
+            echo '<div class="alert alert-danger rounded-0 mb-0 py-3 text-center">' . esc($mesaj) . '</div>';
+            return;
+        }
+        http_response_code(500);
+        $detay = APP_DEBUG
+            ? '<pre style="margin-top:16px;text-align:left;white-space:pre-wrap;color:#b02a37;font-size:.85rem">'
+              . esc((string) $e) . '</pre>'
+            : '';
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<!doctype html><html lang="tr"><head><meta charset="utf-8">'
+           . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+           . '<title>ShopCore | Beklenmeyen Hata</title></head>'
+           . '<body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;'
+           . 'background:#f6f7f9;color:#212529;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0">'
+           . '<div style="max-width:520px;width:90%;background:#fff;border:1px solid #e5e7eb;border-radius:12px;'
+           . 'box-shadow:0 2px 12px rgba(13,59,102,.08);padding:28px 24px;text-align:center">'
+           . '<div style="font-size:2rem;line-height:1;color:#0d3b66;font-weight:700;margin-bottom:8px">ShopCore</div>'
+           . '<h1 style="font-size:1.15rem;margin:0 0 8px;color:#0d3b66">' . esc($mesaj) . '</h1>'
+           . '<p style="margin:0;color:#6c757d;font-size:.95rem">Lutfen daha sonra tekrar deneyin.'
+           . ' Sorun surerse yonetici ile iletisime gecin.</p>'
+           . $detay . '</div></body></html>';
+    } catch (Throwable $ice) {
+        // Isleyicinin kendisi de patlarsa en kotu durum: duz metin.
+        echo 'Sistem su anda kullanilamiyor.';
+    }
+});

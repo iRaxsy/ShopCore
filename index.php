@@ -85,14 +85,28 @@
         </div>
     </div>
     
-    <h1 class="text-center baslik pt-4 pb-3">Yeni Ürünler</h1>
-    <div class="row urun-izgara">
-        <?php
+    <?php
+    // Yeni urunler once okunur; h1 basligi de icerikle birlikte kosullu basilir
+    // - urun yoksa "Yeni Urunler" yazisi tek basina havada kalmasin.
+    // Tablo yok / veritabani arizaliysa sorgu YUMUSAK düşer: $veri = null
+    // (hata) ile $veri = [] (gerçekten boş mağaza) ayrılır. Böylece global
+    // yakalayıcı devreye girmez, sayfa footer dahil tam render edilir; hata
+    // "mağaza boş" gibi görünmez (footer.php'deki null/[] kalıbıyla tutarlı).
+    try {
         $sorgu = 'SELECT id, urunadi, aciklama, fiyat, resim FROM urunler ORDER BY giris_tarihi DESC LIMIT 0,6';
         $stmt = $con->prepare($sorgu);
         $stmt->execute();
         $veri = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+    } catch (PDOException $e) {
+        error_log('index.php urunler: ' . $e->getMessage());
+        $veri = null;
+    }
+    if ($veri === null): ?>
+    <div class="alert alert-warning text-center py-4">Ürünler şu anda listelenemiyor, lütfen daha sonra tekrar deneyin.</div>
+    <?php elseif ($veri): ?>
+    <h1 class="text-center baslik pt-4 pb-3">Yeni Ürünler</h1>
+    <div class="row urun-izgara">
+        <?php
         foreach ($veri as $kayit) { 
         ?>
         <div class="col-6 col-md-4 col-lg-4 mb-4">
@@ -118,6 +132,7 @@
         </div>
         <?php } ?>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php include "footer.php"; ?>

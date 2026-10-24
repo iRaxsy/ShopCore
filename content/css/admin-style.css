@@ -1796,6 +1796,17 @@ body.admin .panel-kart-kompakt .panel-kart-alt {
     padding-top: 8px;
 }
 
+/* Bildirim seridi buyumesin: yukaridaki `body.admin > .container { flex: 1 0
+   auto }` kurali sayfa govdesi icin yazildi (kalan yuksekligi doldurup footer'i
+   alta iter), ama .admin-flash de body'nin dogrudan cocugu oldugundan o kurala
+   girip buyuyor ve bant ile baslik arasinda asiri bosluk olusturuyordu. Bos alan
+   yalnizca govdede kalsin; alt bosluk da sifirlanir ki arada alert'in mb-4'ü
+   kalsin. Secici (0,3,1) > `body.admin > .container` (0,2,1): ezme garantili. */
+body.admin > .container.admin-flash {
+    flex: 0 0 auto;
+    padding-bottom: 0;
+}
+
 /* ============================================================
    SIPARIS SAYFALARI (pg-siparis-liste / pg-siparis-detay)
    ============================================================ */

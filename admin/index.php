@@ -24,7 +24,7 @@ try {
     )->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log('admin/index: ' . $e->getMessage());
-    admin_hata('HATA: Panel sayıları yüklenemedi.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'HATA: Panel sayıları yüklenemedi.'), $e->getMessage(), 500);
 }
 
 $son_siparis = (!empty($siparis['son_tarih']))

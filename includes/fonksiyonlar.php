@@ -512,6 +512,23 @@ function admin_hata($mesaj, $ayrinti = '', $durum = 400): never
     exit;
 }
 
+/**
+ * PDOException'i kullaniciya gorunecek KISA mesaja cevirir.
+ * Tablo eksikse (SQLSTATE 42S02 / MySQL 1146) spesifik uyarir; aksi halde
+ * cagiranin kendi varsayilan mesajini korur (ozel mesajlar kaybolmasin).
+ */
+function db_hata_mesaji(Throwable $e, string $varsayilan = 'Veritabanı hatası oluştu.'): string
+{
+    if ($e instanceof PDOException) {
+        $kod = (string) $e->getCode();
+        $drv = (int) ($e->errorInfo[1] ?? 0);
+        if ($kod === '42S02' || $drv === 1146) {
+            return 'Veritabanında tablolar bulunamadı.';
+        }
+    }
+    return $varsayilan;
+}
+
 /** Oturum tabarli tek kullanimlik bildirim (flash). */
 function flash($tip, $mesaj = null)
 {
@@ -769,10 +786,37 @@ function siparis_eposta_gonder(array $siparis, array $kalemler): bool
     return (bool)$gonderildi;
 }
 
+/**
+ * Yonlendirme hedefini site icinde tutar (acik yonlendirme kapisi birakmaz).
+ *
+ * Mutlak URL (http://..., https://...) HER ZAMAN yalnizca yol bilesenine
+ * indirgenir; host asla kullanilmaz. Host karsilastirmasi HTTP_HOST (istemci
+ * basligi - taklit edilebilir) uzerinden yapildigi icin guven tabani olarak
+ * birakildi: mevcut hicbir cagiran mutlak URL gecirmiyor, dolayisiyla ayni
+ * siteye tam URL dondurme gereksinimi yok. Boylece harici/klik host ve URL'e
+ * gomulu kimlik bilgisi (http://x@site/) kendiliginden dusur.
+ *
+ * Yol basindaki // (protocol-relative) ve CR/LF de temizlenir: ltrim sonrasi
+ * //evil.com bile APP_BASE_URL altinda site ici bir yola donusur.
+ */
+function guvenli_yonlendirme_hedefi($yol): string
+{
+    $yol = str_replace(["\r", "\n"], '', (string) $yol);
+
+    if (preg_match('#^https?://#i', $yol)) {
+        // Host guvenilmez: mutlak URL yalnizca yoluna indirgenir.
+        $yol = (string) parse_url($yol, PHP_URL_PATH);
+    }
+
+    $yol = ltrim($yol, '/');
+
+    return APP_BASE_URL . ($yol === '' ? 'index.php' : $yol);
+}
+
 /** APP_BASE_URL tabanli yonlendirme ve cikis. */
 function redirect($yol)
 {
-    $hedef = preg_match('#^https?://#i', $yol) ? $yol : APP_BASE_URL . ltrim($yol, '/');
+    $hedef = guvenli_yonlendirme_hedefi($yol);
 
     // Cikti baslamissa header() calismaz; meta+JS ile yonlendir ve logla
     if (headers_sent($dosya, $satir)) {

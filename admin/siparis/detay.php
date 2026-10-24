@@ -34,7 +34,7 @@ try {
     $kalemStmt->execute([$id]);
     $kalemler = $kalemStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    admin_hata('HATA: Sipariş bilgileri yüklenemedi.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'HATA: Sipariş bilgileri yüklenemedi.'), $e->getMessage(), 500);
 }
 
 $durum_gorunum = siparis_durum_gorunum($siparis['durum']);

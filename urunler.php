@@ -37,11 +37,18 @@
                                     $kategori = isset($_GET["id"]) ? (string)$_GET["id"] : "";
                                     $siralama = isset($_GET["siralama"]) ? (string)$_GET["siralama"] : "akilli";
                                     $fiyat = isset($_GET["fiyat"]) ? (string)$_GET["fiyat"] : "0";
+                                    $db_hata = false; // DB arizasi "magaza bos" gibi gorunmesin
                                     
                                     $sorgu = 'SELECT kategoriler.*, COUNT(urunler.id) AS adet FROM kategoriler LEFT JOIN urunler ON kategoriler.id = urunler.kategori_id GROUP BY kategoriler.id ORDER BY kategoriler.kategoriadi';
-                                    $stmt = $con->prepare($sorgu);
-                                    $stmt->execute();
-                                    $veri = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    try {
+                                        $stmt = $con->prepare($sorgu);
+                                        $stmt->execute();
+                                        $veri = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    } catch (PDOException $e) {
+                                        error_log('urunler.php kategoriler: ' . $e->getMessage());
+                                        $veri = [];
+                                        $db_hata = true;
+                                    }
                                     $toplam = 0;
                                     
                                     foreach ($veri as $kayit) { 
@@ -188,9 +195,15 @@
                         $where = $kosullar ? implode(" AND ", $kosullar) : "1=1";
 
                         $sorgu_sayisi = "SELECT COUNT(*) as toplam FROM urunler WHERE $where";
-                        $stmt_sayisi = $con->prepare($sorgu_sayisi);
-                        $stmt_sayisi->execute($params);
-                        $toplam_kayit = $stmt_sayisi->fetch(PDO::FETCH_ASSOC)['toplam'];
+                        try {
+                            $stmt_sayisi = $con->prepare($sorgu_sayisi);
+                            $stmt_sayisi->execute($params);
+                            $toplam_kayit = $stmt_sayisi->fetch(PDO::FETCH_ASSOC)['toplam'];
+                        } catch (PDOException $e) {
+                            error_log('urunler.php sayim: ' . $e->getMessage());
+                            $toplam_kayit = 0;
+                            $db_hata = true;
+                        }
 
                         $toplam_sayfa = ceil($toplam_kayit / $sayfa_basi_kayit);
 
@@ -201,14 +214,21 @@
 
                         // $orderby yukarida sabit beyaz-listeden gelir (guvenli)
                         $sorgu = "SELECT id, urunadi, aciklama, fiyat, resim FROM urunler WHERE $where ORDER BY $orderby LIMIT :offset, :limit";
-                        $stmt = $con->prepare($sorgu);
-                        $stmt->bindValue(':offset', $baslangic, PDO::PARAM_INT);
-                        $stmt->bindValue(':limit', $sayfa_basi_kayit, PDO::PARAM_INT);
-                        foreach ($params as $k => $v) {
-                            $stmt->bindValue($k, $v, PDO::PARAM_STR);
+                        // Tablo yok/DB eksikse bu sorgular yakalanir; sayfa footer dahil tam acilir.
+                        try {
+                            $stmt = $con->prepare($sorgu);
+                            $stmt->bindValue(':offset', $baslangic, PDO::PARAM_INT);
+                            $stmt->bindValue(':limit', $sayfa_basi_kayit, PDO::PARAM_INT);
+                            foreach ($params as $k => $v) {
+                                $stmt->bindValue($k, $v, PDO::PARAM_STR);
+                            }
+                            $stmt->execute();
+                            $veri = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        } catch (PDOException $e) {
+                            error_log('urunler.php urunler: ' . $e->getMessage());
+                            $veri = [];
+                            $db_hata = true;
                         }
-                        $stmt->execute();
-                        $veri = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         $urun_sayisi = count($veri);
 
@@ -247,6 +267,15 @@
                                 }
                             } else {
                             ?>
+                            <?php if ($db_hata): ?>
+                            <div class="col-12">
+                                <div class="alert alert-danger text-center py-5">
+                                    <svg class="ik ik-3x mb-3" aria-hidden="true"><use href="#lk-alert-circle"></use></svg>
+                                    <h3>Ürünler listelenemiyor</h3>
+                                    <p class="mb-0">Veritabanına şu anda erişilemiyor. Lütfen daha sonra tekrar deneyin.</p>
+                                </div>
+                            </div>
+                            <?php else: ?>
                             <div class="col-12">
                                 <div class="alert alert-warning text-center py-5">
                                     <svg class="ik ik-3x mb-3" aria-hidden="true"><use href="#lk-alert-circle"></use></svg>
@@ -255,10 +284,12 @@
                                     <a href="urunler.php" class="btn btn-primary mt-3">Tüm Ürünleri Göster</a>
                                 </div>
                             </div>
+                            <?php endif; ?>
                             <?php } ?>
                         </div>
                         
                         <!-- Sayfalandırma Navigasyonu -->
+                        <?php if (!$db_hata): ?>
                         <?php
                         echo sayfalama($sayfa, $toplam_sayfa, 'urunler.php', [
                             'id' => $kategori,
@@ -267,6 +298,7 @@
                             'fiyat' => $fiyat,
                         ]);
                         ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

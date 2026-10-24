@@ -4,6 +4,10 @@ app_session_start();
 admin_zorunlu();
 $con = db();
 
+// Basarili kayit sonrasi form temiz basar (kategori akisi gibi); hatali
+// gonderimde false kalir, kullaniciyin yazdigi degerler korunur.
+$kaydedildi = false;
+
 // Tum mantik cikti baslamadan ONCE calisir
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_dogrula();
@@ -88,9 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 password_hash($sifre_g, PASSWORD_BCRYPT),
             ]);
             flash('basari', 'Kullanıcı başarıyla kaydedildi.');
-            // redirect() hedefinin basina APP_BASE_URL eklenir; bu yuzden
-            // klasor icinden bile tam yol ('admin/kullanici/liste.php') verilir
-            redirect('admin/kullanici/liste.php');
+            // Kategori akisi gibi: liste.php'ye yonlendirme yok, ayni sayfada
+            // kalinarak bant gosterilir ve form sifirlanir.
+            $kaydedildi = true;
         } catch (PDOException $e) {
             if ((string)$e->getCode() === '23000') {
                 // uk_kullanici_eposta: ayni anda iki ayni kayit denemesi
@@ -107,7 +111,10 @@ include "../header.php";
 
 // Hatali gonderimde kullaniciyin yazdigi kaybolmasin (sifre alan bilerek
 // geri basilmez); GET isteginde $_POST bos oldugu icin alanlar bos kalir.
-$deger = function ($alan) {
+$deger = function ($alan) use ($kaydedildi) {
+    if ($kaydedildi) {
+        return '';
+    }
     return esc((string)($_POST[$alan] ?? ''));
 };
 ?>
@@ -161,7 +168,7 @@ $deger = function ($alan) {
             <div class="form-group">
                 <label for="il" class="form-label">İl</label>
                 <select class="form-select" id="il" name="il">
-                    <?= il_secenekleri((string)($_POST['il'] ?? '')) ?>
+                    <?= il_secenekleri($kaydedildi ? '' : (string)($_POST['il'] ?? '')) ?>
                 </select>
             </div>
             
@@ -206,6 +213,52 @@ $deger = function ($alan) {
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('uyeEkleForm');
+    if (!form) { return; }
+    const kaydetBtn = form.querySelector('button[type="submit"]');
+    const adsoyad = document.getElementById('adsoyad');
+    const eposta  = document.getElementById('eposta');
+    const sifre   = document.getElementById('sifre');
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (adsoyad.value.trim().length < 3) {
+            Swal.fire({ title: "Uyarı!", text: "Ad soyad en az 3 karakter olmalıdır!", icon: "warning", confirmButtonText: "Tamam" });
+            adsoyad.focus(); return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eposta.value.trim())) {
+            Swal.fire({ title: "Uyarı!", text: "Geçerli bir e-posta adresi girin!", icon: "warning", confirmButtonText: "Tamam" });
+            eposta.focus(); return;
+        }
+        if (sifre.value.length < 8) {
+            Swal.fire({ title: "Uyarı!", text: "Şifre en az 8 karakter olmalıdır!", icon: "warning", confirmButtonText: "Tamam" });
+            sifre.focus(); return;
+        }
+
+        Swal.fire({
+            title: "Yeni Kullanıcı Ekle",
+            text: "Bu kullanıcıyı kaydetmek istediğinizden emin misiniz?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Evet, Kaydet",
+            cancelButtonText: "Hayır",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (kaydetBtn) {
+                    kaydetBtn.disabled = true;
+                    kaydetBtn.innerHTML = '<svg class="ik ik-spin" aria-hidden="true"><use href="#lk-refresh-cw"></use></svg> Kaydediliyor...';
+                }
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 
 <?php include "../footer.php"; ?>
 

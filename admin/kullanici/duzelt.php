@@ -20,7 +20,7 @@ try {
         admin_hata('HATA: Kayıt bulunamadı.', '', 404);
     }
 } catch (PDOException $e) {
-    admin_hata('HATA: Kayit okunurken bir sorun olustu.', $e->getMessage(), 500);
+    admin_hata(db_hata_mesaji($e, 'HATA: Kayit okunurken bir sorun olustu.'), $e->getMessage(), 500);
 }
 
 // DB'de ham deger durur; kacirma yalnizca cikti noktalarinda esc() ile yapilir

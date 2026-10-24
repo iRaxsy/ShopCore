@@ -8,8 +8,11 @@ config/yerel.php
 
 # Yonetici tarafindan yuklenen urun gorselleri depoya alinmaz;
 # klasor yapisini korumak icin .htaccess ve sabit statikler istisna.
+# web.config da istisna: IIS'de bu klasorde PHP calismasini engelleyen
+# guvenlik kabugu (bkz. content/images/web.config) - derlenmis gorsel degil.
 content/images/*
 !content/images/.htaccess
+!content/images/web.config
 !content/images/default.png
 !content/images/logo.png
 

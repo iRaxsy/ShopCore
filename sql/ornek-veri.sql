@@ -1,41 +1,44 @@
 -- ---------------------------------------------------------------------------
--- ShopCore - ORNEK VERI (demo seed)
+-- ShopCore - ORNEK VERI (demo seed) — YALNIZCA VERI
 -- ---------------------------------------------------------------------------
--- Bu dosya SEMA dosyasini tamamlar; onun YERINE GECMEZ.
--- Sira: once sql/shopcore.sql kur, sonra bu dosyayi calistir.
+-- Bu dosya SEMA OLUSTURMAZ; sql/shopcore.sql'in kurmus oldugu tablolara
+-- demo veri yucar. ONCE shopcore.sql calistirilmalidir (bu dosya tek basina
+-- calistirilirsa "Table ... doesn't exist" hatasi alinir).
 --
---   C:\xampp\mysql\bin\mysql.exe -u root shopcore --default-character-set=utf8mb4 < sql\ornek-veri.sql
---   (veya phpMyAdmin → shopcore DB → SQL sekmesi → yapıştır → Git)
+-- shopcore.sql sunucu/sema + 2 panel hesabi (admin id=1, editor id=2) kurar;
+-- BU dosya yalniz magaza verisini (kategori/urun/uye/siparis) ekler.
+-- yetkililer tablosuna DOKUNMAZ.
+--
+-- Calistirma:
+--   C:\xampp\mysql\bin\mysql.exe -u root --default-character-set=utf8mb4 < sql\ornek-veri.sql
+--   (veya phpMyAdmin → ShopCore DB → SQL sekmesi → yapıştır → Git)
 --
 -- ICERIK:
---   * 1 korunmus admin (id=1, kadi=admin)   → sifre "123456" (silmeyi reddediyoruz)
---   * 1 yeni yetkili    (id=2, kadi=editor) → sifre "123456"
---   * 5 site uyesi      (kullanicilar)      → hepsinin parolasi "123456"
 --   * 5 kategori, 15 urun (urunler)
+--   * 5 site uyesi      (kullanicilar)  → hepsinin parolasi "123456"
 --   * 3 ornek siparis   (siparisler + siparis_kalemleri)
 --
 -- UYARI:
---   * Tablolari DELETE ile temizler (id=1 admin satirina DOKUNMAZ).
---   * YAYIN ORTAMINDA ASLA CALISTIRMA — mevcut veriyi siler.
+--   * Tablolari DELETE ile temizler, sonra demo veriyi yeniden yazar.
+--     yetkililer (admin/editor) korunur; onlara DOKUNULMAZ.
+--   * YAYIN ORTAMINDA ASLA CALISTIRMA — mevcut magaza verisini siler.
 --   * Urun resimleri 'default.png' olarak isaretlidir; gorsel dosyalari
 --     repoda yoktur, fonksiyonlar.php :: resim_yolu() varsayilana duser.
---   * Tum hash'ler password_hash('123456', PASSWORD_BCRYPT) ile uretildi
---     (cost=10, benzersiz salt). Panelde/admin sifre degistirirken
---     password_verify() bu hash'leri kabul eder.
+--   * Demo kullanicilar bilerek AYNI bcrypt hash'i paylasir (kolaylik);
+--     gercek kayit akisinda password_hash() benzersiz salt uretir.
 -- ---------------------------------------------------------------------------
 
-USE `shopcore`;
+USE `ShopCore`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- --- Temizle (child → parent sirasiyla) ---
+-- --- Temizle (child → parent sirasiyla; yetkililer ATLANIR) ---
 DELETE FROM `siparis_kalemleri`;
 DELETE FROM `siparisler`;
 DELETE FROM `urun_resimleri`;
 DELETE FROM `urunler`;
 DELETE FROM `kullanicilar`;
-DELETE FROM `yetkililer` WHERE `id` != 1;   -- id=1 korunmus admin
 DELETE FROM `kategoriler`;
 
 ALTER TABLE `kategoriler`       AUTO_INCREMENT = 1;
@@ -48,29 +51,23 @@ ALTER TABLE `siparis_kalemleri` AUTO_INCREMENT = 1;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------------
--- YETKILILER — id=2 ikinci panel hesabi (editor rolunde, korumasiz)
--- ---------------------------------------------------------------------------
--- id=1 (admin) zaten shopcore.sql tohumunda mevcut; burada DOKUNMUYORUZ.
--- Silme korumasi yalnizca id=1'e uygulanir; id>=2 normal CRUD'e aciktir.
-
-INSERT INTO `yetkililer` (`id`, `adsoyad`, `kadi`, `sifre`) VALUES
-(2, 'Editor Kullanicisi', 'editor', '$2y$10$AhIF4HICuyuYOpYClYYeDegTmcu1SGIwiLB14tVSCifD43lyspf8q');
-
--- ---------------------------------------------------------------------------
 -- KATEGORILER (5 adet)
 -- ---------------------------------------------------------------------------
 -- aciklama kolonu CKEditor HTML'i kabul eder; temiz_html() allow-list'i
 -- p/strong/em/ul/li/h2-h4/blokquote gibi temel etiketleri korur.
+-- kategoriadi DUZ METIN tutulur; HTML entity (&amp; gibi) KULLANILMAZ cunku
+-- ciktilama esc()/htmlspecialchars() ile ikinci kez kodlanir ve ekranda
+-- "&amp;" gorunur. Gerekirse "&" karakteri oldugu gibi birakilir.
 
 INSERT INTO `kategoriler` (`id`, `kategoriadi`, `aciklama`) VALUES
-(1, 'Elektronik',       '<p>Telefon, kulaklik, klavye, mouse ve dijital aksesuarlar. <strong>2 yil</strong> servis garantisiyle.</p>'),
-(2, 'Ev &amp; Yasam',   '<p>Mutfak gerecleri, kucik ev aletleri ve dekorasyon urunleri.</p>'),
-(3, 'Giyim',            '<p>Kadin, erkek ve cocuk icin <em>gunluk</em> giyim secenekleri. Mevsim normalleri bedenler stoklardadir.</p>'),
-(4, 'Kitap &amp; Kirtasiye', '<p>Roman, hikaye, defter, ajanda ve ofis malzemeleri.</p>'),
-(5, 'Spor &amp; Outdoor',    '<p>Fitness ekipmanlari, yoga matlari, acikhava malzemeleri.</p>');
+(1, 'Elektronik',        '<p>Telefon, kulaklik, klavye, mouse ve dijital aksesuarlar. <strong>2 yil</strong> servis garantisiyle.</p>'),
+(2, 'Ev & Yasam',        '<p>Mutfak gerecleri, kucik ev aletleri ve dekorasyon urunleri.</p>'),
+(3, 'Giyim',             '<p>Kadin, erkek ve cocuk icin <em>gunluk</em> giyim secenekleri. Mevsim normalleri bedenler stoklardadir.</p>'),
+(4, 'Kitap & Kirtasiye', '<p>Roman, hikaye, defter, ajanda ve ofis malzemeleri.</p>'),
+(5, 'Spor & Outdoor',    '<p>Fitness ekipmanlari, yoga matlari, acikhava malzemeleri.</p>');
 
 -- ---------------------------------------------------------------------------
--- URUNLER (15 adet — 5 Elektronik / 3 Ev &amp; Yasam / 3 Giyim / 2 Kitap / 2 Spor)
+-- URUNLER (15 adet — 5 Elektronik / 3 Ev & Yasam / 3 Giyim / 2 Kitap / 2 Spor)
 -- ---------------------------------------------------------------------------
 -- Fiyatlar gercekci TL degerleri; stok INT UNSIGNED (0 = tukendi ornegi id=5).
 -- resim='default.png' — kod, dosya bulunamayinca varsayilana duser.
@@ -94,7 +91,7 @@ INSERT INTO `urunler` (`id`, `urunadi`, `aciklama`, `fiyat`, `stok`, `giris_tari
      '<p>Otomatik fokus, cift Stereo mikrofona sahip <strong>canli gorus</strong> kamerasi. Tripod sabitleme, Windows/Mac/Chromebook uyumlu.</p>',
      649.90, 0, '2026-09-10 16:20:00', 'default.png', 1),
 
--- === Ev &amp; Yasam (3) ===
+-- === Ev & Yasam (3) ===
 (6,  'Celik Caydanlik Takimi 6+1',
      '<p>Indüksiyon dahil tum ocaklara uyumlu <em>18/10 celik</em> caydanlik. Demlik + 5 parca corba tenceresi hediye.</p>',
      1250.00, 24, '2026-08-25 13:00:00', 'default.png', 2),
@@ -116,7 +113,7 @@ INSERT INTO `urunler` (`id`, `urunadi`, `aciklama`, `fiyat`, `stok`, `giris_tari
      '<p>Spor ve gunluk kullanim icin elastik bel baglantili, iki cepli <em>unisex</em> eşofman alti.</p>',
      549.50, 48, '2026-09-14 19:45:00', 'default.png', 3),
 
--- === Kitap &amp; Kirtasiye (2) ===
+-- === Kitap & Kirtasiye (2) ===
 (12, 'Roman - Kürk Mantolu Madonna',
      '<p>Sabahattin Ali''nin klasik eseri. 240 sayfa, kuşe kağıt, ciltsiz baskı.</p>',
      89.90, 35, '2026-08-05 15:00:00', 'default.png', 4),
@@ -124,7 +121,7 @@ INSERT INTO `urunler` (`id`, `urunadi`, `aciklama`, `fiyat`, `stok`, `giris_tari
      '<p>Doğa dostu kraft kapak, 80 gr/m² asitsiz kağıt, saglam dikis ciltleme.</p>',
      45.00, 300, '2026-08-18 09:00:00', 'default.png', 4),
 
--- === Spor &amp; Outdoor (2) ===
+-- === Spor & Outdoor (2) ===
 (14, 'Yoga Mati Kaymaz 6mm Mor',
      '<p>TPE malzemeden uretilen, cift yuzu kaymaz yoga/pilates matı. 183x61 cm, 6mm kalınlık.</p>',
      349.90, 26, '2026-09-02 17:20:00', 'default.png', 5),
@@ -150,7 +147,7 @@ INSERT INTO `kullanicilar`
 -- ---------------------------------------------------------------------------
 -- SIPARISLER (3 ornek — farkli durum + odeme tipinde)
 -- ---------------------------------------------------------------------------
--- numarasi CHAR(16): SC + YYMMDDHHMMSS + 2 random (siparis_numarasi() formati)
+-- numarasi CHAR(16): SC + YYMMDDHHMMSS + 2 random (siparis_numarasi() formati).
 -- ara_toplam/kargo/toplam SIPARIS ANINDAKI sunucu kopyalari; KARGO_ESIGI=1000
 -- varsayildi: 1000 TL ve uzeri kargo=0; altinda 99.99.
 -- Siparis adsoyad/eposta/adres, kullanici tablosundan BAGIMSIZ donmus kopya.
@@ -198,11 +195,11 @@ INSERT INTO `siparis_kalemleri`
 -- ---------------------------------------------------------------------------
 -- GIRIS BILGILERI (demo — yayinda degistir!)
 -- ---------------------------------------------------------------------------
--- Panel (admin/login.php):
+-- Panel hesaplari admin/editor admin/login.php — shopcore.sql tohumundan gelir:
 --   kadi: admin   | sifre: 123456   (id=1 — silme korumasi aktif)
 --   kadi: editor  | sifre: 123456   (id=2 — silinebilir)
 --
--- Site uye girisi (giris.php):
+-- Site uye girisi (giris.php) — bu dosyadan gelir:
 --   ahmet.yilmaz@example.com  / 123456
 --   ayse.demir@example.com    / 123456
 --   mehmet.kaya@example.com   / 123456

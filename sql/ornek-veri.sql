@@ -11,7 +11,7 @@
 --
 -- Calistirma:
 --   C:\xampp\mysql\bin\mysql.exe -u root --default-character-set=utf8mb4 < sql\ornek-veri.sql
---   (veya phpMyAdmin → ShopCore DB → SQL sekmesi → yapıştır → Git)
+--   (veya phpMyAdmin → shopcore DB → SQL sekmesi → yapıştır → Git)
 --
 -- ICERIK:
 --   * 5 kategori, 15 urun (urunler)
@@ -28,7 +28,7 @@
 --     gercek kayit akisinda password_hash() benzersiz salt uretir.
 -- ---------------------------------------------------------------------------
 
-USE `ShopCore`;
+USE `shopcore`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

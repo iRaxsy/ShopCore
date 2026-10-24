@@ -41,8 +41,8 @@
 --     hizli durum formundan yapilir.
 -- ---------------------------------------------------------------------------
 
-CREATE DATABASE IF NOT EXISTS `ShopCore` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_turkish_ci;
-USE `ShopCore`;
+CREATE DATABASE IF NOT EXISTS `shopcore` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_turkish_ci;
+USE `shopcore`;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
